@@ -4,7 +4,6 @@ import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
-// Middlewares
 app.use(
   cors({
     origin: '*',
@@ -14,7 +13,6 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health Check Route
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
@@ -24,10 +22,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes (Auth Only for now)
 app.use('/api/auth', authRoutes);
 
-// 404 Route Handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -35,7 +31,6 @@ app.use((req, res) => {
   });
 });
 
-// Global Error Handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';

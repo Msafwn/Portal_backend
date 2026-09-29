@@ -115,7 +115,6 @@ const jobSchema = new mongoose.Schema(
   }
 );
 
-// Indexing for faster searching and filtering
 jobSchema.index({ title: 'text', description: 'text', category: 'text' });
 jobSchema.index({ status: 1, createdAt: -1 });
 

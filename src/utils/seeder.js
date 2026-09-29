@@ -41,7 +41,7 @@ const seedData = async () => {
     ]);
 
     console.log('🌱 Seeding Sample Users...');
-    // 1. Employer User
+
     const employer = await User.create({
       name: 'TechLogix HR',
       email: 'recruiter@techlogix.com',
@@ -59,7 +59,6 @@ const seedData = async () => {
       profileCompleted: true,
     });
 
-    // 2. Student Candidate (Has React, JavaScript, HTML, but missing Node.js & Docker)
     const student = await User.create({
       name: 'Obaid Mushtaq',
       email: 'obaid@example.com',
@@ -88,7 +87,6 @@ const seedData = async () => {
       profileCompleted: true,
     });
 
-    // 3. Experienced Professional Candidate (Matches almost everything)
     const professional = await User.create({
       name: 'Muhammad Safwan',
       email: 'safwan@example.com',
@@ -155,7 +153,7 @@ const seedData = async () => {
         currency: 'PKR',
         isNegotiable: true,
       },
-      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days ahead
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       status: 'Open',
     });
 

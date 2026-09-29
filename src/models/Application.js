@@ -60,7 +60,6 @@ const applicationSchema = new mongoose.Schema(
   }
 );
 
-// Prevent duplicate applications for the same job by the same user
 applicationSchema.index({ job: 1, applicant: 1 }, { unique: true });
 applicationSchema.index({ job: 1, matchPercentage: -1 });
 

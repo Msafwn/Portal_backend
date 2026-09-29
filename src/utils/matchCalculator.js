@@ -1,7 +1,3 @@
-/**
- * Intelligent Match Calculator & Skill Gap Analyzer
- * Calculates compatibility score between candidate profile and job requirements.
- */
 export const calculateMatchScore = (candidate, job) => {
   if (!job || !job.requiredSkills || job.requiredSkills.length === 0) {
     return {
@@ -12,7 +8,6 @@ export const calculateMatchScore = (candidate, job) => {
     };
   }
 
-  // Normalize candidate skills
   const candidateSkills = (candidate.skills || []).map((s) =>
     (typeof s === 'string' ? s : s.name || '').trim().toLowerCase()
   );
@@ -27,7 +22,6 @@ export const calculateMatchScore = (candidate, job) => {
     const weight = req.weight || 1;
     totalWeight += weight;
 
-    // Direct match or alias inclusion
     const isMatched = candidateSkills.some(
       (cSkill) =>
         cSkill === reqName ||
@@ -43,19 +37,16 @@ export const calculateMatchScore = (candidate, job) => {
     }
   });
 
-  // Base skill match percentage (0 to 100)
   const skillMatchRatio = totalWeight > 0 ? earnedWeight / totalWeight : 0;
-  let rawScore = skillMatchRatio * 85; // Skills carry up to 85% of total score
+  let rawScore = skillMatchRatio * 85;
 
-  // Experience Bonus (up to 15%)
   const minExp = job.minExperienceYears || 0;
   let candidateExpYears = 0;
   if (candidate.experience && candidate.experience.length > 0) {
-    candidateExpYears = candidate.experience.length; // Approximate number of positions/years
+    candidateExpYears = candidate.experience.length;
   }
 
   if (minExp === 0) {
-    // Entry level / internship: full experience bonus
     rawScore += 15;
   } else if (candidateExpYears >= minExp) {
     rawScore += 15;
