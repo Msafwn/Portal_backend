@@ -1,0 +1,141 @@
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+const skillItemSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+    proficiency: {
+      type: String,
+      enum: ['Beginner', 'Intermediate', 'Expert'],
+      default: 'Intermediate',
+    },
+  },
+  { _id: false }
+);
+
+const educationItemSchema = new mongoose.Schema(
+  {
+    degree: { type: String, required: true },
+    institute: { type: String, required: true },
+    startYear: { type: Number },
+    endYear: { type: Number },
+    gradeOrCgpa: { type: String },
+  },
+  { _id: false }
+);
+
+const experienceItemSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    company: { type: String, required: true },
+    location: { type: String },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    current: { type: Boolean, default: false },
+    description: { type: String },
+  },
+  { _id: false }
+);
+
+const certificationItemSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    issuingOrganization: { type: String },
+    issueDate: { type: Date },
+    credentialUrl: { type: String },
+  },
+  { _id: false }
+);
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        'Please enter a valid email address',
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [6, 'Password must be at least 6 characters long'],
+      select: false,
+    },
+    role: {
+      type: String,
+      enum: ['student', 'fresh_graduate', 'professional', 'employer', 'admin'],
+      default: 'student',
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    location: {
+      type: String,
+      trim: true,
+    },
+    headline: {
+      type: String,
+      trim: true,
+    },
+    bio: {
+      type: String,
+      trim: true,
+    },
+    skills: [skillItemSchema],
+    education: [educationItemSchema],
+    experience: [experienceItemSchema],
+    certifications: [certificationItemSchema],
+    resumeUrl: {
+      type: String,
+    },
+    companyProfile: {
+      companyName: { type: String, trim: true },
+      industry: { type: String, trim: true },
+      website: { type: String, trim: true },
+      description: { type: String, trim: true },
+      companySize: { type: String, trim: true },
+    },
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Encrypt password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// Compare entered password with hashed password
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+
+export default User;

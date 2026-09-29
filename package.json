@@ -1,0 +1,36 @@
+{
+  "name": "smart-career-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Smart Career Role Match AI Job System",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node src/utils/seeder.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "keywords": [
+    "mern",
+    "fyp",
+    "career-portal",
+    "smart-matching",
+    "mongodb",
+    "express"
+  ],
+  "author": "Smart Career Team",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "prettier": "^3.9.9"
+  }
+}
