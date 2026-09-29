@@ -4,6 +4,10 @@ import jwt from 'jsonwebtoken';
 
 const skillItemSchema = new mongoose.Schema(
   {
+    skill: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Skill',
+    },
     name: {
       type: String,
       required: true,
@@ -21,34 +25,34 @@ const skillItemSchema = new mongoose.Schema(
 
 const educationItemSchema = new mongoose.Schema(
   {
-    degree: { type: String, required: true },
-    institute: { type: String, required: true },
+    degree: { type: String, required: true, trim: true },
+    institute: { type: String, required: true, trim: true },
     startYear: { type: Number },
     endYear: { type: Number },
-    gradeOrCgpa: { type: String },
+    gradeOrCgpa: { type: String, trim: true },
   },
   { _id: false }
 );
 
 const experienceItemSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    company: { type: String, required: true },
-    location: { type: String },
+    title: { type: String, required: true, trim: true },
+    company: { type: String, required: true, trim: true },
+    location: { type: String, trim: true },
     startDate: { type: Date },
     endDate: { type: Date },
     current: { type: Boolean, default: false },
-    description: { type: String },
+    description: { type: String, trim: true },
   },
   { _id: false }
 );
 
 const certificationItemSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    issuingOrganization: { type: String },
+    name: { type: String, required: true, trim: true },
+    issuingOrganization: { type: String, trim: true },
     issueDate: { type: Date },
-    credentialUrl: { type: String },
+    credentialUrl: { type: String, trim: true },
   },
   { _id: false }
 );
@@ -124,6 +128,10 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ role: 1 });
+userSchema.index({ 'skills.name': 1 });
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {

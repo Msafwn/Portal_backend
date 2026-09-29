@@ -5,12 +5,12 @@ const applicationSchema = new mongoose.Schema(
     job: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Job',
-      required: true,
+      required: [true, 'Job reference is required'],
     },
     applicant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: [true, 'Applicant reference is required'],
     },
     matchPercentage: {
       type: Number,
@@ -62,6 +62,7 @@ const applicationSchema = new mongoose.Schema(
 
 applicationSchema.index({ job: 1, applicant: 1 }, { unique: true });
 applicationSchema.index({ job: 1, matchPercentage: -1 });
+applicationSchema.index({ applicant: 1, createdAt: -1 });
 
 const Application = mongoose.model('Application', applicationSchema);
 

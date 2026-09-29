@@ -2,6 +2,10 @@ import mongoose from 'mongoose';
 
 const requiredSkillSchema = new mongoose.Schema(
   {
+    skill: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Skill',
+    },
     name: {
       type: String,
       required: true,
@@ -115,8 +119,10 @@ const jobSchema = new mongoose.Schema(
   }
 );
 
-jobSchema.index({ title: 'text', description: 'text', category: 'text' });
+jobSchema.index({ employer: 1 });
 jobSchema.index({ status: 1, createdAt: -1 });
+jobSchema.index({ 'requiredSkills.name': 1 });
+jobSchema.index({ title: 'text', description: 'text', category: 'text' });
 
 const Job = mongoose.model('Job', jobSchema);
 

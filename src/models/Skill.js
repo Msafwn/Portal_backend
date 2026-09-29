@@ -4,14 +4,14 @@ const skillSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, 'Skill name is required'],
       unique: true,
       trim: true,
       lowercase: true,
     },
     category: {
       type: String,
-      required: true,
+      required: [true, 'Skill category is required'],
       enum: [
         'Frontend',
         'Backend',
@@ -30,24 +30,19 @@ const skillSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    learningResources: [
-      {
-        title: { type: String },
-        platform: { type: String },
-        url: { type: String },
-        type: {
-          type: String,
-          enum: ['Course', 'Documentation', 'Tutorial', 'Roadmap'],
-        },
-      },
-    ],
+    demandLevel: {
+      type: String,
+      enum: ['High', 'Medium', 'Low'],
+      default: 'Medium',
+    },
   },
   {
     timestamps: true,
   }
 );
 
-skillSchema.index({ name: 'text', aliases: 'text' });
+skillSchema.index({ name: 1 }, { unique: true });
+skillSchema.index({ category: 1 });
 
 const Skill = mongoose.model('Skill', skillSchema);
 
