@@ -129,7 +129,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ role: 1 });
 userSchema.index({ 'skills.name': 1 });
 userSchema.index({ location: 1 });
