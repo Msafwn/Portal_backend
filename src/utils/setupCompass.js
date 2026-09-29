@@ -148,7 +148,11 @@ const setupCompassDatabase = async () => {
     const skillCount = await Skill.countDocuments();
     if (skillCount === 0) {
       await Skill.insertMany([
-        { name: 'react', category: 'Frontend', aliases: ['reactjs', 'react.js'] },
+        {
+          name: 'react',
+          category: 'Frontend',
+          aliases: ['reactjs', 'react.js'],
+        },
         { name: 'node.js', category: 'Backend', aliases: ['nodejs', 'node'] },
         { name: 'express.js', category: 'Backend', aliases: ['express'] },
         { name: 'mongodb', category: 'Database', aliases: ['mongo'] },

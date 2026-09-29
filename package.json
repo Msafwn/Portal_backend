@@ -9,6 +9,7 @@
     "dev": "nodemon src/server.js",
     "seed": "node src/utils/seeder.js",
     "setup:db": "node src/utils/setupCompass.js",
+    "test:auth": "node src/utils/test_auth_apis.js",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
