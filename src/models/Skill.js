@@ -43,6 +43,8 @@ const skillSchema = new mongoose.Schema(
 
 skillSchema.index({ name: 1 }, { unique: true });
 skillSchema.index({ category: 1 });
+skillSchema.index({ aliases: 1 });
+skillSchema.index({ name: 'text', aliases: 'text' });
 
 const Skill = mongoose.model('Skill', skillSchema);
 

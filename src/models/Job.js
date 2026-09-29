@@ -119,10 +119,20 @@ const jobSchema = new mongoose.Schema(
   }
 );
 
-jobSchema.index({ employer: 1 });
+jobSchema.index({ employer: 1, createdAt: -1 });
 jobSchema.index({ status: 1, createdAt: -1 });
+jobSchema.index({ status: 1, jobType: 1 });
+jobSchema.index({ status: 1, workMode: 1 });
+jobSchema.index({ status: 1, category: 1 });
 jobSchema.index({ 'requiredSkills.name': 1 });
-jobSchema.index({ title: 'text', description: 'text', category: 'text' });
+jobSchema.index({ deadline: 1 });
+jobSchema.index(
+  { title: 'text', description: 'text', company: 'text', category: 'text' },
+  {
+    weights: { title: 10, company: 5, category: 3, description: 1 },
+    name: 'job_search_index',
+  }
+);
 
 const Job = mongoose.model('Job', jobSchema);
 
