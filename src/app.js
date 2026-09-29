@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
-import jobRoutes from './routes/jobRoutes.js';
-import applicationRoutes from './routes/applicationRoutes.js';
 
 const app = express();
 
@@ -26,10 +24,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
+// API Routes (Auth Only for now)
 app.use('/api/auth', authRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes);
 
 // 404 Route Handler
 app.use((req, res) => {
