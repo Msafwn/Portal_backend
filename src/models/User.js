@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const skillItemSchema = new mongoose.Schema(
   {
@@ -111,6 +112,9 @@ const userSchema = new mongoose.Schema(
       description: { type: String, trim: true },
       companySize: { type: String, trim: true },
     },
+    refreshToken: {
+      type: String,
+    },
     profileCompleted: {
       type: Boolean,
       default: false,
@@ -132,6 +136,33 @@ userSchema.pre('save', async function (next) {
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      id: this._id,
+      email: this.email,
+      name: this.name,
+      role: this.role,
+    },
+    process.env.ACCESS_TOKEN_SECRET || 'access_secret_key',
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '1d',
+    }
+  );
+};
+
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET || 'refresh_secret_key',
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '10d',
+    }
+  );
 };
 
 const User = mongoose.model('User', userSchema);

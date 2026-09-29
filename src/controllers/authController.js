@@ -4,10 +4,22 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || '7d',
-  });
+const generateAccessAndRefreshToken = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      'Something went wrong while generating refresh and access token'
+    );
+  }
 };
 
 export const register = asyncHandler(async (req, res) => {
@@ -69,15 +81,28 @@ export const register = asyncHandler(async (req, res) => {
     profileCompleted: true,
   });
 
-  const token = generateToken(user._id);
-  const createdUser = await User.findById(user._id).select('-password');
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
+
+  const createdUser = await User.findById(user._id).select(
+    '-password -refreshToken'
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  };
 
   return res
     .status(201)
+    .cookie('accessToken', accessToken, options)
+    .cookie('refreshToken', refreshToken, options)
     .json(
       new ApiResponse(
         201,
-        { user: createdUser, token },
+        { user: createdUser, accessToken, refreshToken },
         'User registered successfully'
       )
     );
@@ -106,8 +131,13 @@ export const login = asyncHandler(async (req, res) => {
     throw new ApiError(401, 'Invalid credentials. Password does not match.');
   }
 
-  const token = generateToken(user._id);
-  const loggedInUser = await User.findById(user._id).select('-password');
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
+
+  const loggedInUser = await User.findById(user._id).select(
+    '-password -refreshToken'
+  );
 
   const options = {
     httpOnly: true,
@@ -117,18 +147,70 @@ export const login = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie('token', token, options)
+    .cookie('accessToken', accessToken, options)
+    .cookie('refreshToken', refreshToken, options)
     .json(
       new ApiResponse(
         200,
-        { user: loggedInUser, token },
+        { user: loggedInUser, accessToken, refreshToken },
         'User logged in successfully'
       )
     );
 });
 
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies.refreshToken || req.body.refreshToken;
+
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, 'Unauthorized request: No refresh token provided');
+  }
+
+  try {
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET || 'refresh_secret_key'
+    );
+
+    const user = await User.findById(decodedToken?.id);
+
+    if (!user) {
+      throw new ApiError(401, 'Invalid refresh token: User not found');
+    }
+
+    if (incomingRefreshToken !== user?.refreshToken) {
+      throw new ApiError(401, 'Refresh token is expired or has been used');
+    }
+
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    };
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await generateAccessAndRefreshToken(user._id);
+
+    return res
+      .status(200)
+      .cookie('accessToken', accessToken, options)
+      .cookie('refreshToken', newRefreshToken, options)
+      .json(
+        new ApiResponse(
+          200,
+          { accessToken, refreshToken: newRefreshToken },
+          'Access token refreshed successfully'
+        )
+      );
+  } catch (error) {
+    throw new ApiError(401, error?.message || 'Invalid refresh token');
+  }
+});
+
 export const getMe = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password');
+  const user = await User.findById(req.user.id).select(
+    '-password -refreshToken'
+  );
 
   if (!user) {
     throw new ApiError(404, 'User profile not found');
@@ -171,7 +253,9 @@ export const updateProfile = asyncHandler(async (req, res) => {
   user.profileCompleted = true;
   await user.save();
 
-  const updatedUser = await User.findById(user._id).select('-password');
+  const updatedUser = await User.findById(user._id).select(
+    '-password -refreshToken'
+  );
 
   return res
     .status(200)
@@ -179,6 +263,18 @@ export const updateProfile = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $unset: {
+        refreshToken: 1,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -186,6 +282,7 @@ export const logout = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .clearCookie('token', options)
+    .clearCookie('accessToken', options)
+    .clearCookie('refreshToken', options)
     .json(new ApiResponse(200, {}, 'User logged out successfully'));
 });

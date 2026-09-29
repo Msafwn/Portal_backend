@@ -4,35 +4,36 @@ import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const protect = asyncHandler(async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      req.user = await User.findById(decoded.id).select('-password');
-      if (!req.user) {
-        throw new ApiError(
-          401,
-          'User associated with this token no longer exists'
-        );
-      }
-
-      return next();
-    } catch (error) {
-      throw new ApiError(
-        401,
-        error.message || 'Not authorized, token failed or expired'
-      );
-    }
-  }
+  let token =
+    req.cookies?.accessToken ||
+    (req.headers.authorization && req.headers.authorization.startsWith('Bearer')
+      ? req.headers.authorization.split(' ')[1]
+      : null);
 
   if (!token) {
-    throw new ApiError(401, 'Not authorized, no authentication token provided');
+    throw new ApiError(401, 'Unauthorized request: No access token provided');
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET || 'access_secret_key'
+    );
+
+    const user = await User.findById(decoded?.id).select(
+      '-password -refreshToken'
+    );
+    if (!user) {
+      throw new ApiError(401, 'Invalid access token: User not found');
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    throw new ApiError(
+      401,
+      error?.message || 'Invalid or expired access token'
+    );
   }
 });
 
