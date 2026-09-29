@@ -1,22 +1,26 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
 app.use(
   cors({
-    origin: '*',
+    origin: process.env.CORS_ORIGIN || '*',
     credentials: true,
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+app.use(express.json({ limit: '16kb' }));
+app.use(express.urlencoded({ extended: true, limit: '16kb' }));
+app.use(express.static('public'));
+app.use(cookieParser());
 
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: '🚀 Smart Career Role Match AI Job System Backend API is Running!',
+    message: 'Smart Career Role Match AI Job System Backend API is Running',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
