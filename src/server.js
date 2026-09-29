@@ -11,9 +11,9 @@ connectDB();
 const server = app.listen(PORT, () => {
   console.log(`
 ==================================================
- Smart Career Backend Server Running!
- Port: http://localhost:${PORT}
-  Environment: ${process.env.NODE_ENV || 'development'}
+🚀 Smart Career Backend Server Running!
+📡 Port: http://localhost:${PORT}
+🕒 Environment: ${process.env.NODE_ENV || 'development'}
 ==================================================
   `);
 });

@@ -70,19 +70,17 @@ export const register = asyncHandler(async (req, res) => {
   });
 
   const token = generateToken(user._id);
-
   const createdUser = await User.findById(user._id).select('-password');
 
-  return res.status(201).json(
-    new ApiResponse(
-      201,
-      {
-        user: createdUser,
-        token,
-      },
-      'User registered successfully'
-    )
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        { user: createdUser, token },
+        'User registered successfully'
+      )
+    );
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -109,19 +107,24 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   const token = generateToken(user._id);
-
   const loggedInUser = await User.findById(user._id).select('-password');
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        user: loggedInUser,
-        token,
-      },
-      'User logged in successfully'
-    )
-  );
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  };
+
+  return res
+    .status(200)
+    .cookie('token', token, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, token },
+        'User logged in successfully'
+      )
+    );
 });
 
 export const getMe = asyncHandler(async (req, res) => {
@@ -176,7 +179,13 @@ export const updateProfile = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  };
+
   return res
     .status(200)
+    .clearCookie('token', options)
     .json(new ApiResponse(200, {}, 'User logged out successfully'));
 });
