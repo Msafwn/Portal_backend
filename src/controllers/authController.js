@@ -27,7 +27,9 @@ export const register = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    confirmPassword,
     role,
+    department,
     phone,
     location,
     headline,
@@ -40,6 +42,14 @@ export const register = asyncHandler(async (req, res) => {
 
   if (!name || !email || !password) {
     throw new ApiError(400, 'Name, email, and password are required fields');
+  }
+
+  if (password.length < 8) {
+    throw new ApiError(400, 'Password must be at least 8 characters long');
+  }
+
+  if (confirmPassword && password !== confirmPassword) {
+    throw new ApiError(400, 'Password and confirm password do not match');
   }
 
   const userExists = await User.findOne({ email: email.toLowerCase().trim() });
@@ -70,6 +80,7 @@ export const register = asyncHandler(async (req, res) => {
     email: email.toLowerCase().trim(),
     password,
     role: userRole,
+    department: department || 'Information Technology',
     phone,
     location,
     headline,
@@ -134,7 +145,7 @@ export const login = asyncHandler(async (req, res) => {
 
   const isPasswordValid = await user.matchPassword(password);
   if (!isPasswordValid) {
-    throw new ApiError(401, 'Invalid credentials. Password does not match.');
+    throw new ApiError(401, 'Invalid credentials!');
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -250,6 +261,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
   const allowedFields = [
     'name',
+    'department',
     'phone',
     'location',
     'headline',
@@ -305,3 +317,4 @@ export const logout = asyncHandler(async (req, res) => {
     .clearCookie('refreshToken', cookieOptions)
     .json(new ApiResponse(200, {}, 'User logged out successfully'));
 });
+

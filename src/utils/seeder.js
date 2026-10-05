@@ -185,7 +185,94 @@ const seedData = async () => {
       status: 'Open',
     });
 
-    console.log('✅ Database Seeded Successfully!');
+    const job3 = await Job.create({
+      title: 'Junior Software Engineer (Trainee)',
+      company: 'Systems Limited',
+      employer: employer._id,
+      description:
+        'Fast-track Graduate Trainee program for passionate fresh graduates. You will be trained in full-stack cloud applications, agile methodology, and modern architectures.',
+      jobType: 'entry_level',
+      category: 'Software Engineering',
+      requiredSkills: [
+        { name: 'javascript', weight: 3, mandatory: true },
+        { name: 'react', weight: 2, mandatory: true },
+        { name: 'node.js', weight: 2, mandatory: false },
+        { name: 'git', weight: 1, mandatory: false },
+      ],
+      experienceRequired: 0,
+      minExperienceYears: 0,
+      educationRequirement: 'BS Computer Science or Software Engineering (2024-2026 Batch)',
+      location: 'Lahore',
+      workMode: 'On-site',
+      salaryRange: {
+        min: 65000,
+        max: 85000,
+        currency: 'PKR',
+        isNegotiable: false,
+      },
+      deadline: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000),
+      status: 'Open',
+    });
+
+    const job4 = await Job.create({
+      title: 'Senior MERN Stack Architect',
+      company: 'Netsol Technologies',
+      employer: employer._id,
+      description:
+        'Seeking an experienced Senior Full Stack Engineer to lead technical roadmap, microservices architecture, and scale mission-critical cloud enterprise systems.',
+      jobType: 'experienced',
+      category: 'Enterprise Engineering',
+      requiredSkills: [
+        { name: 'react', weight: 4, mandatory: true },
+        { name: 'node.js', weight: 4, mandatory: true },
+        { name: 'mongodb', weight: 3, mandatory: true },
+        { name: 'docker', weight: 2, mandatory: false },
+        { name: 'rest api', weight: 2, mandatory: true },
+      ],
+      experienceRequired: 3,
+      minExperienceYears: 3,
+      educationRequirement: "Bachelor's or Master's in Computer Science",
+      location: 'Lahore',
+      workMode: 'Hybrid',
+      salaryRange: {
+        min: 220000,
+        max: 350000,
+        currency: 'PKR',
+        isNegotiable: true,
+      },
+      deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      status: 'Open',
+    });
+
+    const job5 = await Job.create({
+      title: 'AI & Data Science Research Grant Fellowship',
+      company: 'National Center of Artificial Intelligence (NCAI)',
+      employer: employer._id,
+      description:
+        'Funded research scholarship for university students to work on Natural Language Processing and intelligent machine learning projects. Full tuition grant and research stipend.',
+      jobType: 'scholarship',
+      category: 'Research & AI',
+      requiredSkills: [
+        { name: 'python', weight: 4, mandatory: true },
+        { name: 'git', weight: 2, mandatory: false },
+        { name: 'rest api', weight: 1, mandatory: false },
+      ],
+      experienceRequired: 0,
+      minExperienceYears: 0,
+      educationRequirement: 'Enrolled in Undergraduate (BS) Degree Program',
+      location: 'Islamabad / Remote',
+      workMode: 'Remote',
+      salaryRange: {
+        min: 50000,
+        max: 75000,
+        currency: 'PKR',
+        isNegotiable: false,
+      },
+      deadline: new Date(Date.now() + 40 * 24 * 60 * 60 * 1000),
+      status: 'Open',
+    });
+
+    console.log('✅ Database Seeded Successfully with 5 Targeted Jobs for All Roles!');
     console.log(`
 --- Test Accounts Created ---
 1. Employer:     recruiter@techlogix.com  / password123

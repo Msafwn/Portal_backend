@@ -50,7 +50,17 @@ const jobSchema = new mongoose.Schema(
     jobType: {
       type: String,
       enum: [
+        'internship',
+        'scholarship',
+        'entry_level',
+        'trainee',
+        'mid_level',
+        'senior_level',
+        'experienced',
+        'part_time',
+        'full_time',
         'Internship',
+        'Scholarship',
         'Entry-Level',
         'Mid-Level',
         'Senior-Level',
@@ -58,7 +68,12 @@ const jobSchema = new mongoose.Schema(
         'Part-Time',
         'Contract',
       ],
-      default: 'Entry-Level',
+      default: 'entry_level',
+    },
+    department: {
+      type: String,
+      default: 'Information Technology',
+      trim: true,
     },
     category: {
       type: String,
@@ -74,6 +89,11 @@ const jobSchema = new mongoose.Schema(
         message: 'At least one required skill must be specified',
       },
     },
+    experienceRequired: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     minExperienceYears: {
       type: Number,
       default: 0,
@@ -81,8 +101,7 @@ const jobSchema = new mongoose.Schema(
     },
     educationRequirement: {
       type: String,
-      default:
-        'BS in Computer Science / Software Engineering / IT or Equivalent',
+      default: "Bachelor's Degree or Equivalent in Relevant Field",
       trim: true,
     },
     location: {

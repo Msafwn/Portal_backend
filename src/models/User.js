@@ -78,13 +78,25 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters long'],
+      minlength: [8, 'Password must be at least 8 characters long'],
       select: false,
     },
     role: {
       type: String,
-      enum: ['student', 'fresh_graduate', 'professional', 'employer', 'admin'],
-      default: 'student',
+      enum: [
+        'student',
+        'fresh_graduate',
+        'experienced',
+        'professional',
+        'employer',
+        'admin',
+      ],
+      default: 'fresh_graduate',
+    },
+    department: {
+      type: String,
+      default: 'Information Technology',
+      trim: true,
     },
     phone: {
       type: String,
@@ -177,3 +189,4 @@ userSchema.methods.generateRefreshToken = function () {
 const User = mongoose.model('User', userSchema);
 
 export default User;
+
