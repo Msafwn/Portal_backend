@@ -706,10 +706,10 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
 
   // 2. Real-time Email Notification via Gmail SMTP
   try {
-    const candidateEmail = application.applicant?.email;
-    const candidateName = application.applicant?.name || 'Candidate';
-    const jobTitle = application.job?.title || 'Selected Role';
-    const companyName = application.job?.company || 'Recruiting Company';
+    const candidateEmail = req.body.candidateEmail || application.applicant?.email;
+    const candidateName = req.body.candidateName || application.applicant?.name || 'Candidate';
+    const jobTitle = req.body.jobTitle || application.job?.title || 'Selected Role';
+    const companyName = req.body.company || application.job?.company || 'Recruiting Company';
 
     if (candidateEmail) {
       await sendInterviewInvitationEmail({
@@ -838,6 +838,79 @@ export const evaluateApplicantATS = asyncHandler(async (req, res) => {
         missingSkills: application.missingSkills,
       },
       'ATS details retrieved from stored application'
+    )
+  );
+/**
+ * 9. Employer: Send Direct Interview Email to Candidate (Works with mock or DB candidates)
+ * POST /api/applications/send-interview-email
+ */
+export const sendDirectInterviewEmail = asyncHandler(async (req, res) => {
+  const {
+    candidateEmail,
+    candidateName = 'Candidate',
+    jobTitle = 'Selected Position',
+    company = 'Hiring Team',
+    date,
+    time,
+    mode = 'Google Meet (Video Call)',
+    meetingLink = 'https://meet.google.com/xyz-recruiter-session',
+    notes = '',
+    applicationId,
+  } = req.body;
+
+  const targetEmail = candidateEmail || process.env.EMAIL_USER || 'safwanarshad782@gmail.com';
+
+  if (!targetEmail) {
+    throw new ApiError(400, 'Candidate email is required to send interview invitation');
+  }
+
+  // Update MongoDB application if valid 24-char ObjectId is passed
+  if (applicationId && String(applicationId).length === 24) {
+    try {
+      const app = await Application.findById(applicationId);
+      if (app) {
+        app.status = 'Interview Scheduled';
+        app.interview = {
+          date: date || new Date().toISOString().split('T')[0],
+          time: time || '11:00 AM',
+          mode,
+          meetingLink,
+          notes,
+        };
+        if (notes) app.employerNotes = notes;
+        await app.save();
+      }
+    } catch (e) {
+      console.warn('DB update in sendDirectInterviewEmail note:', e.message);
+    }
+  }
+
+  const emailResult = await sendInterviewInvitationEmail({
+    to: targetEmail,
+    candidateName,
+    jobTitle,
+    company,
+    date: date || new Date().toISOString().split('T')[0],
+    time: time || '11:00 AM',
+    mode,
+    meetingLink,
+    notes,
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        success: true,
+        recipient: targetEmail,
+        candidateName,
+        jobTitle,
+        company,
+        date,
+        time,
+        messageId: emailResult?.messageId || 'sent',
+      },
+      `Interview invitation successfully sent to ${targetEmail} via Gmail SMTP`
     )
   );
 });

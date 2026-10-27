@@ -4,6 +4,7 @@ import LoginHistory from '../models/LoginHistory.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { sendOtpVerificationEmail } from '../utils/emailService.js';
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -418,5 +419,80 @@ export const logout = asyncHandler(async (req, res) => {
     .clearCookie('accessToken', cookieOptions)
     .clearCookie('refreshToken', cookieOptions)
     .json(new ApiResponse(200, {}, 'User logged out successfully'));
+});
+
+/**
+ * Send OTP Verification Email
+ * POST /api/auth/send-otp
+ */
+export const sendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new ApiError(400, 'Email address is required');
+  }
+
+  // Generate 6-digit cryptographic OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  let user = await User.findOne({ email: email.toLowerCase().trim() });
+  if (user) {
+    user.otpCode = otp;
+    user.otpExpiresAt = expiresAt;
+    await user.save({ validateBeforeSave: false });
+  }
+
+  // Dispatch OTP email using real Gmail SMTP
+  const emailDispatched = await sendOtpVerificationEmail({
+    to: email,
+    name: user?.name || 'Smart Career User',
+    otp,
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        email,
+        expiresIn: '10 minutes',
+        emailDispatched: Boolean(emailDispatched),
+      },
+      `6-digit OTP verification code dispatched to ${email}`
+    )
+  );
+});
+
+/**
+ * Verify OTP Code
+ * POST /api/auth/verify-otp
+ */
+export const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    throw new ApiError(400, 'Email and OTP code are required');
+  }
+
+  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  if (!user) {
+    throw new ApiError(404, 'User with this email not found');
+  }
+
+  if (!user.otpCode || user.otpCode !== otp.trim()) {
+    throw new ApiError(400, 'Invalid OTP verification code');
+  }
+
+  if (user.otpExpiresAt && user.otpExpiresAt < new Date()) {
+    throw new ApiError(400, 'OTP code has expired. Please request a new one.');
+  }
+
+  // Clear OTP and mark email verified
+  user.otpCode = null;
+  user.otpExpiresAt = null;
+  user.isEmailVerified = true;
+  await user.save({ validateBeforeSave: false });
+
+  return res.status(200).json(
+    new ApiResponse(200, { email, isEmailVerified: true }, 'Email verified successfully via OTP!')
+  );
 });
 

@@ -7,6 +7,7 @@ import {
   getApplicationById,
   updateApplicationStatus,
   scheduleInterview,
+  sendDirectInterviewEmail,
   withdrawApplication,
   evaluateApplicantATS,
 } from '../controllers/applicationController.js';
@@ -53,6 +54,12 @@ router.patch(
   '/:id/status',
   authorizeRoles('employer', 'admin'),
   updateApplicationStatus
+);
+
+router.post(
+  '/send-interview-email',
+  authorizeRoles('employer', 'admin'),
+  sendDirectInterviewEmail
 );
 
 router.post(

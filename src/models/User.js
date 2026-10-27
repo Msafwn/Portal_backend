@@ -198,6 +198,18 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    otpCode: {
+      type: String,
+      default: null,
+    },
+    otpExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
     profileCompleted: {
       type: Boolean,
       default: false,
