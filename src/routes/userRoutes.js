@@ -23,6 +23,7 @@ import {
   updateEmployerVerificationAdmin,
   bulkUpdateEmployerVerificationAdmin,
   deleteEmployerAdmin,
+  getAdminDashboardStats,
 } from '../controllers/userController.js';
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
@@ -55,6 +56,9 @@ router.post('/resume', protect, updateResume);
 // ===================================
 // ADMIN MANAGEMENT ROUTES
 // ===================================
+// Executive Dashboard Analytics Route
+router.get('/admin/dashboard', protect, authorizeRoles('admin', 'super_admin'), getAdminDashboardStats);
+
 // Employer & Corporate Verification Admin Routes (must be before :id)
 router.get('/admin/employers/all', protect, authorizeRoles('admin', 'super_admin'), getAllEmployersAdmin);
 router.get('/admin/employers', protect, authorizeRoles('admin', 'super_admin'), getAllEmployersAdmin);
