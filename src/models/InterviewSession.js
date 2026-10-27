@@ -80,5 +80,8 @@ interviewSessionSchema.pre('save', function (next) {
   next();
 });
 
-const InterviewSession = mongoose.model('InterviewSession', interviewSessionSchema);
+const InterviewSession = mongoose.model(
+  'InterviewSession',
+  interviewSessionSchema
+);
 export default InterviewSession;

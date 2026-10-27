@@ -53,7 +53,9 @@ export const computeCandidateStats = (user) => {
     academicCredentialsRecorded: eduCount >= 1,
     workExperienceRecorded: expCount >= 1,
     resumeUploaded: Boolean(user.resumeFileName || user.resumeUrl),
-    connectedProfilesLinked: Boolean(user.links?.github || user.links?.linkedin || user.links?.portfolio),
+    connectedProfilesLinked: Boolean(
+      user.links?.github || user.links?.linkedin || user.links?.portfolio
+    ),
   };
 
   return {
@@ -100,9 +102,10 @@ export const generateAtsAnalysis = (user) => {
       title: 'Contact & Profile Links',
       score: contactScore,
       status: contactScore >= 90 ? 'Passed' : 'Needs Attention',
-      notes: hasContact && hasLinks
-        ? 'Full Name, Phone, Email, and Professional Links verified.'
-        : 'Ensure Phone, Email, and LinkedIn/GitHub links are provided.',
+      notes:
+        hasContact && hasLinks
+          ? 'Full Name, Phone, Email, and Professional Links verified.'
+          : 'Ensure Phone, Email, and LinkedIn/GitHub links are provided.',
     },
     {
       title: 'Core Technical Skills',
@@ -114,17 +117,19 @@ export const generateAtsAnalysis = (user) => {
       title: 'Work & Project Experience',
       score: expScore,
       status: expScore >= 75 ? 'Passed' : 'Needs Polish',
-      notes: expCount > 0
-        ? `${expCount} roles/projects documented with measurable deliverables.`
-        : 'Add work experience, internships, or capstone projects to improve ranking.',
+      notes:
+        expCount > 0
+          ? `${expCount} roles/projects documented with measurable deliverables.`
+          : 'Add work experience, internships, or capstone projects to improve ranking.',
     },
     {
       title: 'Academic Education & Degree',
       score: eduScore,
       status: eduScore >= 90 ? 'Passed' : 'Needs Attention',
-      notes: eduCount > 0
-        ? `${user.education[0]?.degree || 'Degree'} verified with academic performance metrics.`
-        : 'Add at least one academic degree or certification.',
+      notes:
+        eduCount > 0
+          ? `${user.education[0]?.degree || 'Degree'} verified with academic performance metrics.`
+          : 'Add at least one academic degree or certification.',
     },
   ];
 
@@ -153,7 +158,9 @@ export const callPythonAiCandidateEvaluation = async (user) => {
       role: user.role || 'student',
       phone: user.phone || '',
       location: user.location || '',
-      skills: (user.skills || []).map((s) => (typeof s === 'string' ? s : s.name)),
+      skills: (user.skills || []).map((s) =>
+        typeof s === 'string' ? s : s.name
+      ),
       education: (user.education || []).map((e) => ({
         degree: e.degree || '',
         institute: e.institute || '',
@@ -175,11 +182,14 @@ export const callPythonAiCandidateEvaluation = async (user) => {
       resumeUrl: user.resumeUrl || '',
     };
 
-    const response = await fetch(`${PYTHON_AI_URL}/api/evaluate-candidate-profile`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(
+      `${PYTHON_AI_URL}/api/evaluate-candidate-profile`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
 
     if (response.ok) {
       const result = await response.json();
@@ -198,7 +208,10 @@ export const callPythonAiCandidateEvaluation = async (user) => {
       };
     }
   } catch (err) {
-    console.warn('⚠️ Python AI microservice not reachable, using local fallback:', err.message);
+    console.warn(
+      '⚠️ Python AI microservice not reachable, using local fallback:',
+      err.message
+    );
   }
 
   // Graceful Fallback
@@ -213,7 +226,9 @@ export const callPythonAiCandidateEvaluation = async (user) => {
 
 // GET /api/candidate/profile
 export const getCandidateProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password -refreshToken');
+  const user = await User.findById(req.user.id).select(
+    '-password -refreshToken'
+  );
 
   if (!user) {
     throw new ApiError(404, 'Candidate not found');
@@ -282,9 +297,17 @@ export const updateCandidateProfile = asyncHandler(async (req, res) => {
       degree: edu.degree || '',
       institute: edu.institute || '',
       field: edu.field || user.department || '',
-      startYear: edu.startYear || (edu.graduationYear ? Number(edu.graduationYear) - 4 : undefined),
-      endYear: edu.endYear || (edu.graduationYear ? Number(edu.graduationYear) : undefined),
-      graduationYear: edu.graduationYear ? String(edu.graduationYear) : (edu.endYear ? String(edu.endYear) : ''),
+      startYear:
+        edu.startYear ||
+        (edu.graduationYear ? Number(edu.graduationYear) - 4 : undefined),
+      endYear:
+        edu.endYear ||
+        (edu.graduationYear ? Number(edu.graduationYear) : undefined),
+      graduationYear: edu.graduationYear
+        ? String(edu.graduationYear)
+        : edu.endYear
+          ? String(edu.endYear)
+          : '',
       gradeOrCgpa: edu.gradeOrCgpa || edu.cgpa || '',
       cgpa: edu.cgpa || edu.gradeOrCgpa || '',
       status: edu.status || 'Completed',
@@ -309,7 +332,10 @@ export const updateCandidateProfile = asyncHandler(async (req, res) => {
   }
 
   // Certifications sync
-  if (req.body.certifications !== undefined && Array.isArray(req.body.certifications)) {
+  if (
+    req.body.certifications !== undefined &&
+    Array.isArray(req.body.certifications)
+  ) {
     user.certifications = req.body.certifications.map((cert) => ({
       ...(cert._id && { _id: cert._id }),
       name: cert.name || '',
@@ -326,8 +352,11 @@ export const updateCandidateProfile = asyncHandler(async (req, res) => {
   user.profileCompleted = true;
   await user.save();
 
-  const updatedUser = await User.findById(user._id).select('-password -refreshToken');
-  const { stats, atsAnalysis } = await callPythonAiCandidateEvaluation(updatedUser);
+  const updatedUser = await User.findById(user._id).select(
+    '-password -refreshToken'
+  );
+  const { stats, atsAnalysis } =
+    await callPythonAiCandidateEvaluation(updatedUser);
 
   return res.status(200).json(
     new ApiResponse(
@@ -361,13 +390,15 @@ export const uploadAvatarFile = asyncHandler(async (req, res) => {
   user.avatar = avatarUrl;
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { avatar: avatarUrl },
-      'Avatar image uploaded and synchronized with candidate profile'
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { avatar: avatarUrl },
+        'Avatar image uploaded and synchronized with candidate profile'
+      )
+    );
 });
 
 // ==========================================
@@ -378,9 +409,11 @@ export const getSkills = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).select('skills');
   if (!user) throw new ApiError(404, 'Candidate not found');
 
-  return res.status(200).json(
-    new ApiResponse(200, user.skills, 'Candidate technical skills retrieved')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.skills, 'Candidate technical skills retrieved')
+    );
 });
 
 export const addSkill = asyncHandler(async (req, res) => {
@@ -409,9 +442,11 @@ export const addSkill = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(201).json(
-    new ApiResponse(201, user.skills, `Skill "${name}" added successfully`)
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(201, user.skills, `Skill "${name}" added successfully`)
+    );
 });
 
 export const updateSkills = asyncHandler(async (req, res) => {
@@ -434,9 +469,15 @@ export const updateSkills = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.skills, 'Candidate technical skills updated successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.skills,
+        'Candidate technical skills updated successfully'
+      )
+    );
 });
 
 export const deleteSkill = asyncHandler(async (req, res) => {
@@ -449,9 +490,15 @@ export const deleteSkill = asyncHandler(async (req, res) => {
   user.skills = user.skills.filter((s) => s.name.toLowerCase() !== target);
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.skills, `Skill "${target}" removed successfully`)
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.skills,
+        `Skill "${target}" removed successfully`
+      )
+    );
 });
 
 // ==========================================
@@ -462,9 +509,11 @@ export const getEducation = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).select('education');
   if (!user) throw new ApiError(404, 'Candidate not found');
 
-  return res.status(200).json(
-    new ApiResponse(200, user.education, 'Education credentials retrieved')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.education, 'Education credentials retrieved')
+    );
 });
 
 export const addEducation = asyncHandler(async (req, res) => {
@@ -490,9 +539,15 @@ export const addEducation = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(201).json(
-    new ApiResponse(201, user.education, 'Education credential added successfully')
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        user.education,
+        'Education credential added successfully'
+      )
+    );
 });
 
 export const updateEducation = asyncHandler(async (req, res) => {
@@ -502,7 +557,9 @@ export const updateEducation = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id);
   if (!user) throw new ApiError(404, 'Candidate not found');
 
-  const item = user.education.id(id) || user.education.find((e) => e._id?.toString() === id || e.degree === id);
+  const item =
+    user.education.id(id) ||
+    user.education.find((e) => e._id?.toString() === id || e.degree === id);
   if (!item) {
     throw new ApiError(404, 'Education credential not found');
   }
@@ -522,9 +579,15 @@ export const updateEducation = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.education, 'Education credential updated successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.education,
+        'Education credential updated successfully'
+      )
+    );
 });
 
 export const deleteEducation = asyncHandler(async (req, res) => {
@@ -539,9 +602,15 @@ export const deleteEducation = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.education, 'Education credential removed successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.education,
+        'Education credential removed successfully'
+      )
+    );
 });
 
 // ==========================================
@@ -552,13 +621,20 @@ export const getExperience = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).select('experience');
   if (!user) throw new ApiError(404, 'Candidate not found');
 
-  return res.status(200).json(
-    new ApiResponse(200, user.experience, 'Work experience and projects retrieved')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.experience,
+        'Work experience and projects retrieved'
+      )
+    );
 });
 
 export const addExperience = asyncHandler(async (req, res) => {
-  const { type, title, company, duration, description, link, location } = req.body;
+  const { type, title, company, duration, description, link, location } =
+    req.body;
 
   if (!title) {
     throw new ApiError(400, 'Job or Project title is required');
@@ -570,28 +646,40 @@ export const addExperience = asyncHandler(async (req, res) => {
   user.experience.unshift({
     type: type || 'experience',
     title: title.trim(),
-    company: company?.trim() || (type === 'project' ? 'Portfolio Project' : 'Company'),
+    company:
+      company?.trim() || (type === 'project' ? 'Portfolio Project' : 'Company'),
     duration: duration?.trim() || '2025 – Present',
-    description: description?.trim() || 'Hands-on practical deliverables and accomplishments.',
+    description:
+      description?.trim() ||
+      'Hands-on practical deliverables and accomplishments.',
     link: link?.trim() || '',
     location: location?.trim() || '',
   });
 
   await user.save();
 
-  return res.status(201).json(
-    new ApiResponse(201, user.experience, 'Experience record added successfully')
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        user.experience,
+        'Experience record added successfully'
+      )
+    );
 });
 
 export const updateExperience = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { type, title, company, duration, description, link, location } = req.body;
+  const { type, title, company, duration, description, link, location } =
+    req.body;
 
   const user = await User.findById(req.user.id);
   if (!user) throw new ApiError(404, 'Candidate not found');
 
-  const item = user.experience.id(id) || user.experience.find((e) => e._id?.toString() === id || e.title === id);
+  const item =
+    user.experience.id(id) ||
+    user.experience.find((e) => e._id?.toString() === id || e.title === id);
   if (!item) {
     throw new ApiError(404, 'Experience entry not found');
   }
@@ -606,9 +694,15 @@ export const updateExperience = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.experience, 'Experience record updated successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.experience,
+        'Experience record updated successfully'
+      )
+    );
 });
 
 export const deleteExperience = asyncHandler(async (req, res) => {
@@ -623,9 +717,15 @@ export const deleteExperience = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.experience, 'Experience record removed successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.experience,
+        'Experience record removed successfully'
+      )
+    );
 });
 
 // ==========================================
@@ -636,9 +736,15 @@ export const getCertifications = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).select('certifications');
   if (!user) throw new ApiError(404, 'Candidate not found');
 
-  return res.status(200).json(
-    new ApiResponse(200, user.certifications, 'Candidate certifications retrieved')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.certifications,
+        'Candidate certifications retrieved'
+      )
+    );
 });
 
 export const addCertification = asyncHandler(async (req, res) => {
@@ -660,9 +766,15 @@ export const addCertification = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(201).json(
-    new ApiResponse(201, user.certifications, 'Certification added successfully')
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        user.certifications,
+        'Certification added successfully'
+      )
+    );
 });
 
 export const deleteCertification = asyncHandler(async (req, res) => {
@@ -677,9 +789,15 @@ export const deleteCertification = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.certifications, 'Certification removed successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.certifications,
+        'Certification removed successfully'
+      )
+    );
 });
 
 // ==========================================
@@ -758,11 +876,16 @@ export const getResumeAnalysis = asyncHandler(async (req, res) => {
 
   const { atsAnalysis } = await callPythonAiCandidateEvaluation(user);
 
-  return res.status(200).json(
-    new ApiResponse(200, atsAnalysis, 'ATS diagnostic evaluation report generated successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        atsAnalysis,
+        'ATS diagnostic evaluation report generated successfully'
+      )
+    );
 });
-
 
 // ==========================================
 // 8. Candidate Password Change
@@ -790,9 +913,9 @@ export const changeCandidatePassword = asyncHandler(async (req, res) => {
   user.password = newPassword;
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, {}, 'Candidate password updated successfully')
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'Candidate password updated successfully'));
 });
 
 // ==========================================
@@ -809,7 +932,9 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 });
 
   // 2. Fetch candidate's applications
-  const applications = await Application.find({ applicant: user._id }).select('job status');
+  const applications = await Application.find({ applicant: user._id }).select(
+    'job status'
+  );
   const appliedJobIds = new Set(applications.map((a) => a.job.toString()));
 
   // 3. Evaluate 50-30-20 match for each job
@@ -830,7 +955,8 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
       totalSkillWeight += weight;
 
       const matched = candidateSkills.some(
-        (cSkill) => cSkill === sName || cSkill.includes(sName) || sName.includes(cSkill)
+        (cSkill) =>
+          cSkill === sName || cSkill.includes(sName) || sName.includes(cSkill)
       );
 
       if (matched) {
@@ -841,8 +967,11 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
       }
     });
 
-    const skillsRatio = totalSkillWeight > 0 ? matchedSkillWeight / totalSkillWeight : 0.7;
-    const skillsScore = Math.round(Math.min(50, Math.max(15, skillsRatio * 50)));
+    const skillsRatio =
+      totalSkillWeight > 0 ? matchedSkillWeight / totalSkillWeight : 0.7;
+    const skillsScore = Math.round(
+      Math.min(50, Math.max(15, skillsRatio * 50))
+    );
 
     // 30% Experience Alignment
     const expCount = user.experience?.length || 0;
@@ -885,7 +1014,10 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
       }
     }
 
-    const matchPercentage = Math.min(98, Math.max(40, skillsScore + experienceScore + educationScore));
+    const matchPercentage = Math.min(
+      98,
+      Math.max(40, skillsScore + experienceScore + educationScore)
+    );
 
     // Format salary display
     let salary = 'Competitive Market Salary';
@@ -918,7 +1050,9 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
       salaryRange: job.salaryRange,
       status: job.status,
       applicantsCount: job.applicantsCount || 0,
-      postedTime: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
+      postedTime: job.createdAt
+        ? new Date(job.createdAt).toLocaleDateString()
+        : 'Recently',
       createdAt: job.createdAt,
       matchPercentage,
       matchedSkills,
@@ -994,7 +1128,8 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
   const avgScore =
     matchedRoles.length > 0
       ? Math.round(
-          matchedRoles.reduce((acc, r) => acc + r.matchPercentage, 0) / matchedRoles.length
+          matchedRoles.reduce((acc, r) => acc + r.matchPercentage, 0) /
+            matchedRoles.length
         )
       : 80;
 
@@ -1019,4 +1154,3 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
     )
   );
 });
-

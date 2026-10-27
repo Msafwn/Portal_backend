@@ -35,42 +35,120 @@ const seedData = async () => {
       { name: 'python', category: 'Data Science & AI', aliases: ['py'] },
       { name: 'pytorch', category: 'Data Science & AI', aliases: ['torch'] },
       { name: 'fastapi', category: 'Backend', aliases: ['fast-api'] },
-      { name: 'transformers', category: 'Data Science & AI', aliases: ['huggingface', 'nlp'] },
+      {
+        name: 'transformers',
+        category: 'Data Science & AI',
+        aliases: ['huggingface', 'nlp'],
+      },
       { name: 'react', category: 'Frontend', aliases: ['reactjs', 'react.js'] },
       { name: 'node.js', category: 'Backend', aliases: ['node', 'nodejs'] },
-      { name: 'express.js', category: 'Backend', aliases: ['express', 'expressjs'] },
+      {
+        name: 'express.js',
+        category: 'Backend',
+        aliases: ['express', 'expressjs'],
+      },
       { name: 'mongodb', category: 'Database', aliases: ['mongo'] },
       { name: 'javascript', category: 'Frontend', aliases: ['js', 'es6'] },
       { name: 'typescript', category: 'Frontend', aliases: ['ts'] },
-      { name: 'docker', category: 'DevOps & Cloud', aliases: ['containerization'] },
+      {
+        name: 'docker',
+        category: 'DevOps & Cloud',
+        aliases: ['containerization'],
+      },
       { name: 'kubernetes', category: 'DevOps & Cloud', aliases: ['k8s'] },
       { name: 'tailwind css', category: 'Frontend', aliases: ['tailwind'] },
-      { name: 'git', category: 'DevOps & Cloud', aliases: ['github', 'version control'] },
-      { name: 'rest api', category: 'Backend', aliases: ['apis', 'restful api'] },
+      {
+        name: 'git',
+        category: 'DevOps & Cloud',
+        aliases: ['github', 'version control'],
+      },
+      {
+        name: 'rest api',
+        category: 'Backend',
+        aliases: ['apis', 'restful api'],
+      },
       // Healthcare & Medicine
-      { name: 'patient triage', category: 'Healthcare', aliases: ['triage', 'emergency triage'] },
-      { name: 'emergency medicine', category: 'Healthcare', aliases: ['er care', 'acute care'] },
-      { name: 'clinical pharmacology', category: 'Healthcare', aliases: ['pharmacology', 'drug interaction'] },
-      { name: 'icu protocols', category: 'Healthcare', aliases: ['intensive care', 'critical care'] },
-      { name: 'cardiology', category: 'Healthcare', aliases: ['cardiac care', 'ecg interpretation'] },
+      {
+        name: 'patient triage',
+        category: 'Healthcare',
+        aliases: ['triage', 'emergency triage'],
+      },
+      {
+        name: 'emergency medicine',
+        category: 'Healthcare',
+        aliases: ['er care', 'acute care'],
+      },
+      {
+        name: 'clinical pharmacology',
+        category: 'Healthcare',
+        aliases: ['pharmacology', 'drug interaction'],
+      },
+      {
+        name: 'icu protocols',
+        category: 'Healthcare',
+        aliases: ['intensive care', 'critical care'],
+      },
+      {
+        name: 'cardiology',
+        category: 'Healthcare',
+        aliases: ['cardiac care', 'ecg interpretation'],
+      },
       // Engineering & Construction
-      { name: 'autocad', category: 'Engineering', aliases: ['cad', 'computer-aided design'] },
-      { name: 'etabs', category: 'Engineering', aliases: ['structural analysis'] },
-      { name: 'sap2000', category: 'Engineering', aliases: ['finite element analysis'] },
-      { name: 'seismic design', category: 'Engineering', aliases: ['earthquake engineering'] },
-      { name: 'project estimation', category: 'Engineering', aliases: ['cost estimation', 'boq'] },
+      {
+        name: 'autocad',
+        category: 'Engineering',
+        aliases: ['cad', 'computer-aided design'],
+      },
+      {
+        name: 'etabs',
+        category: 'Engineering',
+        aliases: ['structural analysis'],
+      },
+      {
+        name: 'sap2000',
+        category: 'Engineering',
+        aliases: ['finite element analysis'],
+      },
+      {
+        name: 'seismic design',
+        category: 'Engineering',
+        aliases: ['earthquake engineering'],
+      },
+      {
+        name: 'project estimation',
+        category: 'Engineering',
+        aliases: ['cost estimation', 'boq'],
+      },
       // Business, Finance & Accounting
-      { name: 'financial modeling', category: 'Finance', aliases: ['dcf modeling', 'lbo'] },
-      { name: 'ms excel (advanced)', category: 'Finance', aliases: ['excel', 'vlookup', 'pivots'] },
-      { name: 'ifrs reporting', category: 'Finance', aliases: ['ifrs', 'gaap reporting'] },
-      { name: 'financial analysis', category: 'Finance', aliases: ['ratio analysis', 'variance analysis'] },
+      {
+        name: 'financial modeling',
+        category: 'Finance',
+        aliases: ['dcf modeling', 'lbo'],
+      },
+      {
+        name: 'ms excel (advanced)',
+        category: 'Finance',
+        aliases: ['excel', 'vlookup', 'pivots'],
+      },
+      {
+        name: 'ifrs reporting',
+        category: 'Finance',
+        aliases: ['ifrs', 'gaap reporting'],
+      },
+      {
+        name: 'financial analysis',
+        category: 'Finance',
+        aliases: ['ratio analysis', 'variance analysis'],
+      },
     ];
     await Skill.insertMany(skillsList);
 
     // =========================================================================
     // 2. SEED USERS (Admin, Employers, Candidates across 4 Disciplines)
     // =========================================================================
-    console.log('🌱 [2/6] Seeding Demo Users (Admin, 4 Employers, 5 Diverse Candidates)...');
+    console.log(
+      '🌱 [2/6] Seeding Demo Users (Admin, 4 Employers, 5 Diverse Candidates)...'
+    );
 
     // 2.1 Super Admin
     const adminUser = await User.create({
@@ -98,7 +176,8 @@ const seedData = async () => {
         companyName: 'TechLogix Global Solutions',
         industry: 'Information Technology',
         website: 'https://techlogix.com',
-        description: 'Pioneering AI-driven digital transformation, cloud native engineering, and enterprise software.',
+        description:
+          'Pioneering AI-driven digital transformation, cloud native engineering, and enterprise software.',
         companySize: '250-500 Employees',
         tagline: 'Empowering Enterprise Intelligence',
         totalSeatsQuota: 20,
@@ -119,7 +198,8 @@ const seedData = async () => {
         companyName: 'Shifa International Hospital',
         industry: 'Healthcare & Medical Sciences',
         website: 'https://shifa.com.pk',
-        description: 'JCI-accredited tertiary care medical center dedicated to clinical excellence and compassionate healthcare.',
+        description:
+          'JCI-accredited tertiary care medical center dedicated to clinical excellence and compassionate healthcare.',
         companySize: '1,000+ Healthcare Professionals',
         tagline: 'Excellence in Healthcare Delivery',
         totalSeatsQuota: 15,
@@ -140,7 +220,8 @@ const seedData = async () => {
         companyName: 'Descon Engineering',
         industry: 'Engineering & Construction',
         website: 'https://descon.com',
-        description: 'Multi-national engineering conglomerate specializing in infrastructure, oil & gas, and energy EPC projects.',
+        description:
+          'Multi-national engineering conglomerate specializing in infrastructure, oil & gas, and energy EPC projects.',
         companySize: '5,000+ Employees',
         tagline: 'Engineering the Future',
         totalSeatsQuota: 12,
@@ -161,7 +242,8 @@ const seedData = async () => {
         companyName: 'Habib Bank Limited (HBL)',
         industry: 'Banking & Financial Services',
         website: 'https://hbl.com',
-        description: "Pakistan's largest commercial bank pioneering fintech solutions, investment banking, and retail financial services.",
+        description:
+          "Pakistan's largest commercial bank pioneering fintech solutions, investment banking, and retail financial services.",
         companySize: '10,000+ Employees',
         tagline: 'Where Dreams Meet Capital',
         totalSeatsQuota: 25,
@@ -207,7 +289,8 @@ const seedData = async () => {
           startDate: new Date('2025-06-01'),
           endDate: new Date('2025-09-01'),
           current: false,
-          description: 'Implemented semantic search pipelines and vector embeddings in Python.',
+          description:
+            'Implemented semantic search pipelines and vector embeddings in Python.',
         },
       ],
       profileCompleted: true,
@@ -250,7 +333,8 @@ const seedData = async () => {
           startDate: new Date('2024-06-01'),
           endDate: new Date('2024-09-01'),
           current: false,
-          description: 'Developed reusable React dashboard components and Node.js authentication endpoints.',
+          description:
+            'Developed reusable React dashboard components and Node.js authentication endpoints.',
         },
       ],
       profileCompleted: true,
@@ -265,7 +349,8 @@ const seedData = async () => {
       role: 'experienced',
       phone: '+92 333 4455667',
       location: 'Lahore, Pakistan',
-      headline: 'Senior Structural Design Engineer (PE) | ETABS & AutoCAD Specialist',
+      headline:
+        'Senior Structural Design Engineer (PE) | ETABS & AutoCAD Specialist',
       bio: 'PEC-registered professional civil engineer with 4+ years of structural modeling, seismic mitigation analysis, and industrial high-rise design.',
       skills: [
         { name: 'autocad', proficiency: 'Expert' },
@@ -290,7 +375,8 @@ const seedData = async () => {
           location: 'Lahore',
           startDate: new Date('2021-09-01'),
           current: true,
-          description: 'Led structural stress modeling for high-rise commercial structures using ETABS and SAP2000.',
+          description:
+            'Led structural stress modeling for high-rise commercial structures using ETABS and SAP2000.',
         },
       ],
       profileCompleted: true,
@@ -330,7 +416,8 @@ const seedData = async () => {
           location: 'Rawalpindi',
           startDate: new Date('2023-11-01'),
           current: true,
-          description: 'Managed trauma emergencies, patient resuscitation, and critical ICU life-support monitoring.',
+          description:
+            'Managed trauma emergencies, patient resuscitation, and critical ICU life-support monitoring.',
         },
       ],
       profileCompleted: true,
@@ -370,7 +457,9 @@ const seedData = async () => {
     // =========================================================================
     // 3. SEED REALISTIC MULTI-DISCIPLINARY JOBS
     // =========================================================================
-    console.log('🌱 [3/6] Seeding Multi-Discipline Jobs across Tech, Healthcare, Engineering & Finance...');
+    console.log(
+      '🌱 [3/6] Seeding Multi-Discipline Jobs across Tech, Healthcare, Engineering & Finance...'
+    );
 
     // Job 1: AI / NLP Engineer (Tech)
     const jobAi = await Job.create({
@@ -391,7 +480,8 @@ const seedData = async () => {
       ],
       experienceRequired: 0,
       minExperienceYears: 0,
-      educationRequirement: 'BS Computer Science, Software Engineering or Data Science',
+      educationRequirement:
+        'BS Computer Science, Software Engineering or Data Science',
       location: 'Islamabad / Hybrid',
       workMode: 'Hybrid',
       salaryRange: {
@@ -458,7 +548,8 @@ const seedData = async () => {
       ],
       experienceRequired: 3,
       minExperienceYears: 3,
-      educationRequirement: "Bachelor's or Master's in Civil Engineering (PEC Registered)",
+      educationRequirement:
+        "Bachelor's or Master's in Civil Engineering (PEC Registered)",
       location: 'Lahore (Ferozepur Road)',
       workMode: 'On-site',
       salaryRange: {
@@ -490,7 +581,8 @@ const seedData = async () => {
       ],
       experienceRequired: 1,
       minExperienceYears: 1,
-      educationRequirement: 'MBBS with valid PM&DC / PMC Permanent Registration',
+      educationRequirement:
+        'MBBS with valid PM&DC / PMC Permanent Registration',
       location: 'Islamabad (H-8/4)',
       workMode: 'On-site',
       salaryRange: {
@@ -522,7 +614,8 @@ const seedData = async () => {
       ],
       experienceRequired: 0,
       minExperienceYears: 0,
-      educationRequirement: 'Enrolled in BBA Finance / BS Accounting / ACMA / ACCA student',
+      educationRequirement:
+        'Enrolled in BBA Finance / BS Accounting / ACMA / ACCA student',
       location: 'Karachi (HBL Plaza, I.I. Chundrigar)',
       workMode: 'On-site',
       salaryRange: {
@@ -571,10 +664,14 @@ const seedData = async () => {
     // =========================================================================
     // 4. SEED APPLICATIONS WITH 50-30-20 BREAKDOWN & LIVE PIPELINE STATUSES
     // =========================================================================
-    console.log('🌱 [4/6] Seeding Live Applications (Shortlisted, Interview Scheduled, Under Review)...');
+    console.log(
+      '🌱 [4/6] Seeding Live Applications (Shortlisted, Interview Scheduled, Under Review)...'
+    );
 
     // 4.1 Syed Hamza Ali -> Associate AI & NLP Engineer (INTERVIEW SCHEDULED)
-    const interviewDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const interviewDate = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
     const appHamza = await Application.create({
       job: jobAi._id,
       applicant: candidateHamza._id,
@@ -601,7 +698,14 @@ const seedData = async () => {
       job: jobMern._id,
       applicant: candidateZainab._id,
       matchPercentage: 89,
-      matchedSkills: ['react', 'node.js', 'mongodb', 'express.js', 'javascript', 'tailwind css'],
+      matchedSkills: [
+        'react',
+        'node.js',
+        'mongodb',
+        'express.js',
+        'javascript',
+        'tailwind css',
+      ],
       missingSkills: [],
       status: 'Shortlisted',
       coverNote:
@@ -621,8 +725,7 @@ const seedData = async () => {
       status: 'Reviewed',
       coverNote:
         'PEC registered engineer with 4+ years modeling complex seismic loads for high-rise commercial structures in ETABS.',
-      employerNotes:
-        'Strong portfolio of industrial structural blueprints.',
+      employerNotes: 'Strong portfolio of industrial structural blueprints.',
       appliedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
     });
 
@@ -631,7 +734,12 @@ const seedData = async () => {
       job: jobMedical._id,
       applicant: candidateAyesha._id,
       matchPercentage: 92,
-      matchedSkills: ['patient triage', 'emergency medicine', 'clinical pharmacology', 'icu protocols'],
+      matchedSkills: [
+        'patient triage',
+        'emergency medicine',
+        'clinical pharmacology',
+        'icu protocols',
+      ],
       missingSkills: [],
       status: 'Shortlisted',
       coverNote:
@@ -646,7 +754,11 @@ const seedData = async () => {
       job: jobFinance._id,
       applicant: candidateMaryam._id,
       matchPercentage: 90,
-      matchedSkills: ['financial modeling', 'ms excel (advanced)', 'financial analysis'],
+      matchedSkills: [
+        'financial modeling',
+        'ms excel (advanced)',
+        'financial analysis',
+      ],
       missingSkills: ['ifrs reporting'],
       status: 'Pending',
       coverNote:
@@ -657,7 +769,9 @@ const seedData = async () => {
     // =========================================================================
     // 5. SEED IN-APP NOTIFICATIONS
     // =========================================================================
-    console.log('🌱 [5/6] Seeding In-App Notifications for Candidates & Employers...');
+    console.log(
+      '🌱 [5/6] Seeding In-App Notifications for Candidates & Employers...'
+    );
 
     // Notification for Hamza (Interview confirmed)
     await Notification.create({
@@ -694,7 +808,8 @@ const seedData = async () => {
       recipient: techEmployer._id,
       sender: candidateHamza._id,
       title: 'Top AI Match Applicant Received 🚀',
-      message: 'Syed Hamza Ali applied for "Associate AI & NLP Engineer" with a 94% match score.',
+      message:
+        'Syed Hamza Ali applied for "Associate AI & NLP Engineer" with a 94% match score.',
       type: 'job_match',
       link: '/employer/candidates',
       metadata: {
@@ -707,13 +822,16 @@ const seedData = async () => {
     // =========================================================================
     // 6. SEED AUDIT LOGS & SECURITY SENTINEL DATA
     // =========================================================================
-    console.log('🌱 [6/6] Seeding Security Sentinel Logs & Admin Audit Trail...');
+    console.log(
+      '🌱 [6/6] Seeding Security Sentinel Logs & Admin Audit Trail...'
+    );
 
     const auditLogsData = [
       {
         action: 'AI ATS Engine Evaluation Completed',
         category: 'Matching Engine',
-        detail: 'Computed 50-30-20 semantic ontology match for candidate Syed Hamza Ali (94% score).',
+        detail:
+          'Computed 50-30-20 semantic ontology match for candidate Syed Hamza Ali (94% score).',
         type: 'success',
         severity: 'success',
         actor: 'Smart Career AI Engine',
@@ -727,7 +845,8 @@ const seedData = async () => {
       {
         action: 'Official Interview Invitation Dispatched',
         category: 'Email Dispatcher',
-        detail: 'Dispatched Google Meet interview invitation to candidate email via Gmail SMTP (TLS Port 465).',
+        detail:
+          'Dispatched Google Meet interview invitation to candidate email via Gmail SMTP (TLS Port 465).',
         type: 'info',
         severity: 'info',
         actor: 'TechLogix HR Recruiter',
@@ -741,7 +860,8 @@ const seedData = async () => {
       {
         action: 'Super Admin Security Audit Verified',
         category: 'Security Sentinel',
-        detail: 'Admin console initiated JWT role authorization integrity check. All access tokens verified.',
+        detail:
+          'Admin console initiated JWT role authorization integrity check. All access tokens verified.',
         type: 'success',
         severity: 'success',
         actor: 'System Super Admin',
@@ -755,7 +875,8 @@ const seedData = async () => {
       {
         action: 'Candidate Shortlisted for Interview',
         category: 'Recruiter Workflow',
-        detail: 'Recruiter marked Zainab Fatima as Shortlisted for Full Stack MERN Developer.',
+        detail:
+          'Recruiter marked Zainab Fatima as Shortlisted for Full Stack MERN Developer.',
         type: 'success',
         severity: 'success',
         actor: 'TechLogix HR Recruiter',
@@ -776,7 +897,8 @@ const seedData = async () => {
       category: 'System Health',
       source: 'AI Microservice Heartbeat',
       target: 'Matching Engine',
-      description: 'Role matching pipeline is operating at normal latency (48ms average response time).',
+      description:
+        'Role matching pipeline is operating at normal latency (48ms average response time).',
       ipAddress: '127.0.0.1',
       resolved: false,
     });
@@ -793,9 +915,15 @@ const seedData = async () => {
       loginTime: new Date(),
     });
 
-    console.log('\n================================================================');
-    console.log('🎉 [VIVA DEMO PREP] DATABASE SEEDED SUCCESSFULLY WITH 100% LIVE DATA!');
-    console.log('================================================================');
+    console.log(
+      '\n================================================================'
+    );
+    console.log(
+      '🎉 [VIVA DEMO PREP] DATABASE SEEDED SUCCESSFULLY WITH 100% LIVE DATA!'
+    );
+    console.log(
+      '================================================================'
+    );
     console.log(`
 ┌──────────────────────┬────────────────────────────────┬──────────────┐
 │ Role                 │ Email                          │ Password     │
@@ -813,8 +941,12 @@ const seedData = async () => {
 └──────────────────────┴────────────────────────────────┴──────────────┘
     `);
     console.log('Summary:');
-    console.log(' • 6 Multi-Disciplinary Jobs Seeded (Tech, Medical, Civil, Finance)');
-    console.log(' • 5 Submitted Applications (Shortlisted, Interview Scheduled, Under Review)');
+    console.log(
+      ' • 6 Multi-Disciplinary Jobs Seeded (Tech, Medical, Civil, Finance)'
+    );
+    console.log(
+      ' • 5 Submitted Applications (Shortlisted, Interview Scheduled, Under Review)'
+    );
     console.log(' • 3 Live In-App Notifications with Calendar Details');
     console.log(' • 4 Audit & Security Sentinel Logs Ready for /admin/logs\n');
 

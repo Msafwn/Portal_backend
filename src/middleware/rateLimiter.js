@@ -11,7 +11,8 @@ export const authLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   message: {
     success: false,
-    message: 'Too many authentication attempts from this IP. Please try again after 15 minutes.',
+    message:
+      'Too many authentication attempts from this IP. Please try again after 15 minutes.',
     retryAfterMinutes: 15,
   },
 });
@@ -27,7 +28,8 @@ export const registerLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many accounts created from this IP. Please try again after an hour.',
+    message:
+      'Too many accounts created from this IP. Please try again after an hour.',
     retryAfterMinutes: 60,
   },
 });
@@ -43,7 +45,8 @@ export const passwordResetLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many password reset requests. Please try again after an hour.',
+    message:
+      'Too many password reset requests. Please try again after an hour.',
     retryAfterMinutes: 60,
   },
 });
@@ -59,7 +62,8 @@ export const globalLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many requests from this IP. Please slow down and try again shortly.',
+    message:
+      'Too many requests from this IP. Please slow down and try again shortly.',
   },
 });
 

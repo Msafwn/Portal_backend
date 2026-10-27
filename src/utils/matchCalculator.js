@@ -96,14 +96,18 @@ export const calculateMatchScore = (candidate, job) => {
   const requiredEdu = (job.educationRequirement || '').toLowerCase();
 
   if (candidateEducation.length > 0) {
-    if (!requiredEdu || requiredEdu.includes('any') || requiredEdu.includes('degree')) {
+    if (
+      !requiredEdu ||
+      requiredEdu.includes('any') ||
+      requiredEdu.includes('degree')
+    ) {
       educationScore = 20;
     } else {
       const jobDept = (job.department || '').toLowerCase();
       const hasMatchingDegree = candidateEducation.some((edu) => {
         const deg = (edu.degree || '').toLowerCase();
         const field = (edu.field || '').toLowerCase();
-        
+
         // Universal degree levels
         const hasGeneralDegree =
           deg.includes('bachelor') ||
@@ -118,7 +122,11 @@ export const calculateMatchScore = (candidate, job) => {
           deg.includes('bds');
 
         // Medical & Healthcare Field Check
-        if (jobDept.includes('med') || jobDept.includes('health') || jobDept.includes('pharm')) {
+        if (
+          jobDept.includes('med') ||
+          jobDept.includes('health') ||
+          jobDept.includes('pharm')
+        ) {
           return (
             deg.includes('mbbs') ||
             deg.includes('pharm') ||
@@ -132,7 +140,12 @@ export const calculateMatchScore = (candidate, job) => {
         }
 
         // Engineering & Construction Field Check
-        if (jobDept.includes('eng') || jobDept.includes('civil') || jobDept.includes('mech') || jobDept.includes('elect')) {
+        if (
+          jobDept.includes('eng') ||
+          jobDept.includes('civil') ||
+          jobDept.includes('mech') ||
+          jobDept.includes('elect')
+        ) {
           return (
             deg.includes('be') ||
             deg.includes('b.e') ||
@@ -145,7 +158,12 @@ export const calculateMatchScore = (candidate, job) => {
         }
 
         // Business & Finance Field Check
-        if (jobDept.includes('bus') || jobDept.includes('fin') || jobDept.includes('acc') || jobDept.includes('mkt')) {
+        if (
+          jobDept.includes('bus') ||
+          jobDept.includes('fin') ||
+          jobDept.includes('acc') ||
+          jobDept.includes('mkt')
+        ) {
           return (
             deg.includes('bba') ||
             deg.includes('mba') ||

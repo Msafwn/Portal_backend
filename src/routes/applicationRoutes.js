@@ -23,13 +23,25 @@ router.use(protect);
 // -------------------------------------------------------------
 router.post(
   '/',
-  authorizeRoles('student', 'fresh_graduate', 'experienced', 'professional', 'admin'),
+  authorizeRoles(
+    'student',
+    'fresh_graduate',
+    'experienced',
+    'professional',
+    'admin'
+  ),
   applyToJob
 );
 
 router.get(
   '/my',
-  authorizeRoles('student', 'fresh_graduate', 'experienced', 'professional', 'admin'),
+  authorizeRoles(
+    'student',
+    'fresh_graduate',
+    'experienced',
+    'professional',
+    'admin'
+  ),
   getMyApplications
 );
 

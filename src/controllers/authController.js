@@ -161,14 +161,22 @@ export const login = asyncHandler(async (req, res) => {
 
   // Record forensic authentication history
   try {
-    const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
+    const clientIp =
+      req.headers['x-forwarded-for'] ||
+      req.socket?.remoteAddress ||
+      '127.0.0.1';
     const userAgent = req.headers['user-agent'] || 'Desktop (Chrome / Windows)';
     await LoginHistory.create({
       user: loggedInUser.name,
       email: loggedInUser.email,
       role: loggedInUser.role,
-      ipAddress: typeof clientIp === 'string' ? clientIp.split(',')[0].trim() : '127.0.0.1',
-      device: userAgent.includes('Windows') ? 'Chrome • Windows 11' : 'Browser Session',
+      ipAddress:
+        typeof clientIp === 'string'
+          ? clientIp.split(',')[0].trim()
+          : '127.0.0.1',
+      device: userAgent.includes('Windows')
+        ? 'Chrome • Windows 11'
+        : 'Browser Session',
       location: 'Islamabad, PK',
       status: 'Successful',
       statusType: 'success',
@@ -306,9 +314,17 @@ export const updateProfile = asyncHandler(async (req, res) => {
       degree: edu.degree || '',
       institute: edu.institute || '',
       field: edu.field || user.department || '',
-      startYear: edu.startYear || (edu.graduationYear ? Number(edu.graduationYear) - 4 : undefined),
-      endYear: edu.endYear || (edu.graduationYear ? Number(edu.graduationYear) : undefined),
-      graduationYear: edu.graduationYear ? String(edu.graduationYear) : (edu.endYear ? String(edu.endYear) : ''),
+      startYear:
+        edu.startYear ||
+        (edu.graduationYear ? Number(edu.graduationYear) - 4 : undefined),
+      endYear:
+        edu.endYear ||
+        (edu.graduationYear ? Number(edu.graduationYear) : undefined),
+      graduationYear: edu.graduationYear
+        ? String(edu.graduationYear)
+        : edu.endYear
+          ? String(edu.endYear)
+          : '',
       gradeOrCgpa: edu.gradeOrCgpa || edu.cgpa || '',
       cgpa: edu.cgpa || edu.gradeOrCgpa || '',
       status: edu.status || 'Completed',
@@ -333,7 +349,10 @@ export const updateProfile = asyncHandler(async (req, res) => {
   }
 
   // Normalize certifications items
-  if (req.body.certifications !== undefined && Array.isArray(req.body.certifications)) {
+  if (
+    req.body.certifications !== undefined &&
+    Array.isArray(req.body.certifications)
+  ) {
     user.certifications = req.body.certifications.map((cert) => ({
       ...(cert._id && { _id: cert._id }),
       name: cert.name || '',
@@ -491,8 +510,13 @@ export const verifyOtp = asyncHandler(async (req, res) => {
   user.isEmailVerified = true;
   await user.save({ validateBeforeSave: false });
 
-  return res.status(200).json(
-    new ApiResponse(200, { email, isEmailVerified: true }, 'Email verified successfully via OTP!')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { email, isEmailVerified: true },
+        'Email verified successfully via OTP!'
+      )
+    );
 });
-

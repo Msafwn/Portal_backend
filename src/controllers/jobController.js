@@ -41,7 +41,8 @@ export const calculate503020Match = (candidate, job) => {
     totalSkillWeight += weight;
 
     const matched = candidateSkillNames.some(
-      (cSkill) => cSkill === sName || cSkill.includes(sName) || sName.includes(cSkill)
+      (cSkill) =>
+        cSkill === sName || cSkill.includes(sName) || sName.includes(cSkill)
     );
 
     if (matched) {
@@ -52,7 +53,8 @@ export const calculate503020Match = (candidate, job) => {
     }
   });
 
-  const skillsRatio = totalSkillWeight > 0 ? matchedSkillWeight / totalSkillWeight : 0.7;
+  const skillsRatio =
+    totalSkillWeight > 0 ? matchedSkillWeight / totalSkillWeight : 0.7;
   const skillsScore = Math.round(Math.min(50, Math.max(15, skillsRatio * 50)));
 
   // 2. Experience Alignment (30 Points)
@@ -99,7 +101,10 @@ export const calculate503020Match = (candidate, job) => {
     }
   }
 
-  const matchPercentage = Math.min(98, Math.max(40, skillsScore + experienceScore + educationScore));
+  const matchPercentage = Math.min(
+    98,
+    Math.max(40, skillsScore + experienceScore + educationScore)
+  );
 
   return {
     matchPercentage,
@@ -219,7 +224,9 @@ export const getJobs = asyncHandler(async (req, res) => {
   // If candidate is logged in, find their applied job IDs for quick tag
   let appliedJobIds = [];
   if (req.user) {
-    const applications = await Application.find({ applicant: req.user._id }).select('job');
+    const applications = await Application.find({
+      applicant: req.user._id,
+    }).select('job');
     appliedJobIds = applications.map((a) => a.job.toString());
   }
 
@@ -248,7 +255,9 @@ export const getJobs = asyncHandler(async (req, res) => {
       salaryRange: job.salaryRange,
       status: job.status,
       applicantsCount: job.applicantsCount || 0,
-      postedTime: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
+      postedTime: job.createdAt
+        ? new Date(job.createdAt).toLocaleDateString()
+        : 'Recently',
       createdAt: job.createdAt,
       deadline: job.deadline,
       matchPercentage: matchAnalysis.matchPercentage,
@@ -332,7 +341,9 @@ export const getJobById = asyncHandler(async (req, res) => {
     $or: [{ department: job.department }, { category: job.category }],
   })
     .limit(3)
-    .select('title company department location jobType salaryRange requiredSkills createdAt');
+    .select(
+      'title company department location jobType salaryRange requiredSkills createdAt'
+    );
 
   const similarJobs = similarJobsRaw.map((simJob) => {
     const simMatch = calculate503020Match(req.user, simJob);
@@ -371,7 +382,9 @@ export const getJobById = asyncHandler(async (req, res) => {
     applicantsCount: job.applicantsCount || 0,
     deadline: job.deadline,
     createdAt: job.createdAt,
-    postedTime: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
+    postedTime: job.createdAt
+      ? new Date(job.createdAt).toLocaleDateString()
+      : 'Recently',
     matchPercentage: matchAnalysis.matchPercentage,
     matchedSkills: matchAnalysis.matchedSkills,
     missingSkills: matchAnalysis.missingSkills,
@@ -391,7 +404,9 @@ export const getJobById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, detailedJob, 'Job details retrieved successfully'));
+    .json(
+      new ApiResponse(200, detailedJob, 'Job details retrieved successfully')
+    );
 });
 
 /**
@@ -426,7 +441,10 @@ export const createJob = asyncHandler(async (req, res) => {
   } = req.body;
 
   if (!title || (!description && !overview) || !location) {
-    throw new ApiError(400, 'Title, description/overview, and location are required');
+    throw new ApiError(
+      400,
+      'Title, description/overview, and location are required'
+    );
   }
 
   // Support various skill payload keys
@@ -473,9 +491,18 @@ export const createJob = asyncHandler(async (req, res) => {
     }
   }
 
-  const companyName = company || req.user.companyProfile?.companyName || req.user.companyName || req.user.name || 'Hiring Enterprise';
+  const companyName =
+    company ||
+    req.user.companyProfile?.companyName ||
+    req.user.companyName ||
+    req.user.name ||
+    'Hiring Enterprise';
   const finalJobType = jobType || employmentType || roleTarget || 'Full-Time';
-  const finalDescription = (description || overview || `${title} position at ${companyName}`).trim();
+  const finalDescription = (
+    description ||
+    overview ||
+    `${title} position at ${companyName}`
+  ).trim();
 
   const job = await Job.create({
     title: title.trim(),
@@ -504,7 +531,13 @@ export const createJob = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, job, 'Job vacancy created and published successfully!'));
+    .json(
+      new ApiResponse(
+        201,
+        job,
+        'Job vacancy created and published successfully!'
+      )
+    );
 });
 
 /**
@@ -524,13 +557,26 @@ export const generateJobDescriptionAi = asyncHandler(async (req, res) => {
         department: department || 'Computer Science & IT',
         target_role: targetRole || 'fresh_graduate',
         skills: Array.isArray(skills) ? skills : [],
-        company_name: companyName || req.user?.companyProfile?.companyName || req.user?.companyName || req.user?.name || 'TechLogix Global',
+        company_name:
+          companyName ||
+          req.user?.companyProfile?.companyName ||
+          req.user?.companyName ||
+          req.user?.name ||
+          'TechLogix Global',
       }),
     });
 
     if (response.ok) {
       const data = await response.json();
-      return res.status(200).json(new ApiResponse(200, data, 'AI Job Description generated successfully!'));
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            data,
+            'AI Job Description generated successfully!'
+          )
+        );
     }
   } catch (err) {
     console.warn('Python AI service note:', err.message);
@@ -550,9 +596,11 @@ export const generateJobDescriptionAi = asyncHandler(async (req, res) => {
           'Author unit and integration tests to ensure reliable platform performance.',
           'Troubleshoot edge cases and optimize continuous delivery pipelines.',
         ],
-        qualifications: "Bachelor's degree in relevant discipline or demonstrable project portfolio.",
+        qualifications:
+          "Bachelor's degree in relevant discipline or demonstrable project portfolio.",
         suggestedSkills: ['React.js', 'Node.js', 'Python', 'Docker', 'SQL'],
-        salaryGuidance: 'PKR 90,000 - 150,000 / month based on technical background',
+        salaryGuidance:
+          'PKR 90,000 - 150,000 / month based on technical background',
         perks: [
           'Flexible Hybrid / Remote Schedule',
           'Comprehensive Health & OPD Insurance',
@@ -618,8 +666,10 @@ export const updateJob = asyncHandler(async (req, res) => {
   if (location) job.location = location.trim();
   if (workMode) job.workMode = workMode;
   if (totalSeats !== undefined) job.totalSeats = Number(totalSeats) || 1;
-  if (experienceRequired !== undefined) job.experienceRequired = Number(experienceRequired);
-  if (educationRequirement) job.educationRequirement = educationRequirement.trim();
+  if (experienceRequired !== undefined)
+    job.experienceRequired = Number(experienceRequired);
+  if (educationRequirement)
+    job.educationRequirement = educationRequirement.trim();
   if (qualifications) job.qualifications = qualifications.trim();
   if (Array.isArray(requirements)) job.requirements = requirements;
   if (Array.isArray(perks)) job.perks = perks;
@@ -704,7 +754,9 @@ export const deleteJob = asyncHandler(async (req, res) => {
  * GET /api/jobs/employer/my-jobs
  */
 export const getEmployerMyJobs = asyncHandler(async (req, res) => {
-  const jobs = await Job.find({ employer: req.user._id }).sort({ createdAt: -1 });
+  const jobs = await Job.find({ employer: req.user._id }).sort({
+    createdAt: -1,
+  });
 
   const formattedJobs = jobs.map((job) => ({
     id: job._id,
@@ -728,7 +780,9 @@ export const getEmployerMyJobs = asyncHandler(async (req, res) => {
     requirements: job.requirements || [],
     qualifications: job.qualifications || job.educationRequirement,
     perks: job.perks || [],
-    postedDate: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently',
+    postedDate: job.createdAt
+      ? new Date(job.createdAt).toLocaleDateString()
+      : 'Recently',
     createdAt: job.createdAt,
     deadline: job.deadline,
   }));
@@ -752,23 +806,34 @@ export const getEmployerMyJobs = asyncHandler(async (req, res) => {
  * GET /api/jobs/meta/filters
  */
 export const getJobFiltersMeta = asyncHandler(async (req, res) => {
-  const [departments, categories, jobTypes, locations, workModes] = await Promise.all([
-    Job.distinct('department', { status: 'Open' }),
-    Job.distinct('category', { status: 'Open' }),
-    Job.distinct('jobType', { status: 'Open' }),
-    Job.distinct('location', { status: 'Open' }),
-    Job.distinct('workMode', { status: 'Open' }),
-  ]);
+  const [departments, categories, jobTypes, locations, workModes] =
+    await Promise.all([
+      Job.distinct('department', { status: 'Open' }),
+      Job.distinct('category', { status: 'Open' }),
+      Job.distinct('jobType', { status: 'Open' }),
+      Job.distinct('location', { status: 'Open' }),
+      Job.distinct('workMode', { status: 'Open' }),
+    ]);
 
   return res.status(200).json(
     new ApiResponse(
       200,
       {
-        departments: departments.length ? departments : ['Information Technology', 'Software Engineering', 'Data Science'],
-        categories: categories.length ? categories : ['Software Development', 'AI & Machine Learning', 'Cloud & DevOps'],
-        jobTypes: jobTypes.length ? jobTypes : ['Full-Time', 'Internship', 'Entry-Level', 'Part-Time'],
-        locations: locations.length ? locations : ['Islamabad', 'Lahore', 'Karachi', 'Remote'],
-        workModes: workModes.length ? workModes : ['On-site', 'Remote', 'Hybrid'],
+        departments: departments.length
+          ? departments
+          : ['Information Technology', 'Software Engineering', 'Data Science'],
+        categories: categories.length
+          ? categories
+          : ['Software Development', 'AI & Machine Learning', 'Cloud & DevOps'],
+        jobTypes: jobTypes.length
+          ? jobTypes
+          : ['Full-Time', 'Internship', 'Entry-Level', 'Part-Time'],
+        locations: locations.length
+          ? locations
+          : ['Islamabad', 'Lahore', 'Karachi', 'Remote'],
+        workModes: workModes.length
+          ? workModes
+          : ['On-site', 'Remote', 'Hybrid'],
       },
       'Job filter metadata retrieved successfully'
     )
@@ -791,12 +856,18 @@ const DEFAULT_ADMIN_JOBS_SEED = [
     workMode: 'Hybrid',
     department: 'Computer Science & IT',
     category: 'AI & Data Science',
-    salaryRange: { min: 140000, max: 180000, currency: 'PKR', isNegotiable: false },
+    salaryRange: {
+      min: 140000,
+      max: 180000,
+      currency: 'PKR',
+      isNegotiable: false,
+    },
     totalSeats: 3,
     moderationStatus: 'approved',
     riskScore: 98,
     status: 'Open',
-    description: 'Looking for an ambitious Associate AI/NLP Engineer to develop transformer-based embeddings, fine-tune LLMs, and optimize real-time inference pipelines.',
+    description:
+      'Looking for an ambitious Associate AI/NLP Engineer to develop transformer-based embeddings, fine-tune LLMs, and optimize real-time inference pipelines.',
     requirements: [
       'BS in Computer Science, Software Engineering, or Artificial Intelligence',
       'Strong proficiency in Python, PyTorch, Hugging Face Transformers, and Vector DBs',
@@ -821,12 +892,18 @@ const DEFAULT_ADMIN_JOBS_SEED = [
     workMode: 'On-site',
     department: 'Medical & Healthcare',
     category: 'Clinical Medicine',
-    salaryRange: { min: 160000, max: 220000, currency: 'PKR', isNegotiable: false },
+    salaryRange: {
+      min: 160000,
+      max: 220000,
+      currency: 'PKR',
+      isNegotiable: false,
+    },
     totalSeats: 4,
     moderationStatus: 'approved',
     riskScore: 99,
     status: 'Open',
-    description: 'Seeking certified Resident Medical Officers for inpatient emergency triage, critical care patient management, and diagnostic monitoring in our tertiary care facility.',
+    description:
+      'Seeking certified Resident Medical Officers for inpatient emergency triage, critical care patient management, and diagnostic monitoring in our tertiary care facility.',
     requirements: [
       'MBBS degree with valid PMC / PMDC permanent license registration',
       'Completed 1-year mandatory house job (6 months Medicine & Allied, 6 months Surgery)',
@@ -849,12 +926,18 @@ const DEFAULT_ADMIN_JOBS_SEED = [
     workMode: 'On-site',
     department: 'Engineering & Construction',
     category: 'Civil Engineering',
-    salaryRange: { min: 85000, max: 110000, currency: 'PKR', isNegotiable: true },
+    salaryRange: {
+      min: 85000,
+      max: 110000,
+      currency: 'PKR',
+      isNegotiable: true,
+    },
     totalSeats: 6,
     moderationStatus: 'approved',
     riskScore: 96,
     status: 'Open',
-    description: 'Structured 12-month engineering graduate trainee program covering industrial civil foundations, seismic calculations, ETABS modeling, and on-site inspection.',
+    description:
+      'Structured 12-month engineering graduate trainee program covering industrial civil foundations, seismic calculations, ETABS modeling, and on-site inspection.',
     requirements: [
       'BSc / BE in Civil or Structural Engineering from HEC & PEC accredited institution',
       'Minimum CGPA 3.0 / 4.0 or equivalent academic distinction',
@@ -877,12 +960,18 @@ const DEFAULT_ADMIN_JOBS_SEED = [
     workMode: 'On-site',
     department: 'Business & Finance',
     category: 'Commercial Banking',
-    salaryRange: { min: 90000, max: 120000, currency: 'PKR', isNegotiable: false },
+    salaryRange: {
+      min: 90000,
+      max: 120000,
+      currency: 'PKR',
+      isNegotiable: false,
+    },
     totalSeats: 5,
     moderationStatus: 'approved',
     riskScore: 97,
     status: 'Open',
-    description: 'Premier banking leadership development program rotating across corporate credit appraisal, treasury risk management, and Islamic financial products.',
+    description:
+      'Premier banking leadership development program rotating across corporate credit appraisal, treasury risk management, and Islamic financial products.',
     requirements: [
       'BBA / BS Accounting & Finance / MBA from recognized business university',
       'Solid command over financial modeling, DCF valuation, and Excel macros',
@@ -904,12 +993,18 @@ const DEFAULT_ADMIN_JOBS_SEED = [
     workMode: 'Hybrid',
     department: 'Computer Science & IT',
     category: 'Software Development',
-    salaryRange: { min: 120000, max: 175000, currency: 'PKR', isNegotiable: true },
+    salaryRange: {
+      min: 120000,
+      max: 175000,
+      currency: 'PKR',
+      isNegotiable: true,
+    },
     totalSeats: 4,
     moderationStatus: 'approved',
     riskScore: 98,
     status: 'Open',
-    description: 'Looking for experienced MERN stack developers to architect robust microservices in Node.js and dynamic responsive client portals in React.',
+    description:
+      'Looking for experienced MERN stack developers to architect robust microservices in Node.js and dynamic responsive client portals in React.',
     requirements: [
       'BS in Computer Science or Software Engineering',
       'Hands-on experience with MongoDB, Express.js, React, Node.js, and Docker',
@@ -938,11 +1033,15 @@ export const getAllJobsAdmin = asyncHandler(async (req, res) => {
   if (!jobs || jobs.length === 0) {
     try {
       const employers = await User.find({ role: 'employer' }).lean();
-      const defaultEmpId = employers.length > 0 ? employers[0]._id : (await User.findOne({ role: 'admin' }))?._id;
+      const defaultEmpId =
+        employers.length > 0
+          ? employers[0]._id
+          : (await User.findOne({ role: 'admin' }))?._id;
 
       for (let i = 0; i < DEFAULT_ADMIN_JOBS_SEED.length; i++) {
         const item = DEFAULT_ADMIN_JOBS_SEED[i];
-        const assignedEmp = employers[i % (employers.length || 1)]?._id || defaultEmpId;
+        const assignedEmp =
+          employers[i % (employers.length || 1)]?._id || defaultEmpId;
         await Job.create({
           ...item,
           employer: assignedEmp,
@@ -973,7 +1072,10 @@ export const getAllJobsAdmin = asyncHandler(async (req, res) => {
 
   const formattedJobs = jobs.map((j) => {
     const cp = j.employer?.companyProfile || {};
-    const count = appCountMap[j._id.toString()] !== undefined ? appCountMap[j._id.toString()] : (j.applicantsCount || 0);
+    const count =
+      appCountMap[j._id.toString()] !== undefined
+        ? appCountMap[j._id.toString()]
+        : j.applicantsCount || 0;
 
     const salaryStr = j.salaryRange?.min
       ? `${j.salaryRange.currency || 'PKR'} ${Number(j.salaryRange.min).toLocaleString()} - ${Number(j.salaryRange.max || j.salaryRange.min * 1.3).toLocaleString()} / mo`
@@ -993,12 +1095,21 @@ export const getAllJobsAdmin = asyncHandler(async (req, res) => {
       targetRole: j.targetRole || j.title,
       location: j.location || 'Lahore, Pakistan (Hybrid)',
       jobType: j.jobType || 'Full-time',
-      experienceLevel: j.experienceLevel || (j.minExperienceYears ? `${j.minExperienceYears}+ yrs` : 'Fresh Graduate'),
+      experienceLevel:
+        j.experienceLevel ||
+        (j.minExperienceYears
+          ? `${j.minExperienceYears}+ yrs`
+          : 'Fresh Graduate'),
       salary: salaryStr,
       vacancies: j.totalSeats || 1,
       applicantsCount: count,
       moderationStatus: j.moderationStatus || 'approved',
-      riskScore: j.riskScore !== undefined ? j.riskScore : (j.moderationStatus === 'flagged' ? 32 : 98),
+      riskScore:
+        j.riskScore !== undefined
+          ? j.riskScore
+          : j.moderationStatus === 'flagged'
+            ? 32
+            : 98,
       flagReason: j.flagReason || '',
       postedDate: j.createdAt
         ? new Date(j.createdAt).toLocaleDateString('en-US', {
@@ -1015,17 +1126,29 @@ export const getAllJobsAdmin = asyncHandler(async (req, res) => {
           })
         : 'Open',
       description: j.description || '',
-      requirements: Array.isArray(j.requirements) && j.requirements.length > 0 ? j.requirements : [j.educationRequirement || 'Relevant degree'],
+      requirements:
+        Array.isArray(j.requirements) && j.requirements.length > 0
+          ? j.requirements
+          : [j.educationRequirement || 'Relevant degree'],
       skills: (j.requiredSkills || []).map((s) => s.name || s),
     };
   });
 
   // Calculate Global KPI Summary
   const total = formattedJobs.length;
-  const approved = formattedJobs.filter((j) => j.moderationStatus === 'approved').length;
-  const pending = formattedJobs.filter((j) => j.moderationStatus === 'pending').length;
-  const flagged = formattedJobs.filter((j) => j.moderationStatus === 'flagged' || j.moderationStatus === 'blocked').length;
-  const totalApplications = formattedJobs.reduce((acc, curr) => acc + (curr.applicantsCount || 0), 0);
+  const approved = formattedJobs.filter(
+    (j) => j.moderationStatus === 'approved'
+  ).length;
+  const pending = formattedJobs.filter(
+    (j) => j.moderationStatus === 'pending'
+  ).length;
+  const flagged = formattedJobs.filter(
+    (j) => j.moderationStatus === 'flagged' || j.moderationStatus === 'blocked'
+  ).length;
+  const totalApplications = formattedJobs.reduce(
+    (acc, curr) => acc + (curr.applicantsCount || 0),
+    0
+  );
 
   const kpis = {
     totalVacancies: total,
@@ -1090,7 +1213,9 @@ export const updateJobModerationStatusAdmin = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { moderationStatus, flagReason = '', riskScore } = req.body;
 
-  if (!['approved', 'pending', 'flagged', 'blocked'].includes(moderationStatus)) {
+  if (
+    !['approved', 'pending', 'flagged', 'blocked'].includes(moderationStatus)
+  ) {
     throw new ApiError(400, 'Invalid moderation status');
   }
 
@@ -1118,13 +1243,15 @@ export const updateJobModerationStatusAdmin = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Job vacancy not found');
   }
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      updatedJob,
-      `Job moderation status updated to "${moderationStatus}" successfully`
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedJob,
+        `Job moderation status updated to "${moderationStatus}" successfully`
+      )
+    );
 });
 
 /**
@@ -1132,39 +1259,45 @@ export const updateJobModerationStatusAdmin = asyncHandler(async (req, res) => {
  * @desc    Bulk approve or flag multiple vacancies
  * @access  Private (Admin / Super Admin)
  */
-export const bulkUpdateJobModerationStatusAdmin = asyncHandler(async (req, res) => {
-  const { ids, moderationStatus, flagReason = '' } = req.body;
+export const bulkUpdateJobModerationStatusAdmin = asyncHandler(
+  async (req, res) => {
+    const { ids, moderationStatus, flagReason = '' } = req.body;
 
-  if (!Array.isArray(ids) || ids.length === 0) {
-    throw new ApiError(400, 'Please provide an array of job IDs');
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new ApiError(400, 'Please provide an array of job IDs');
+    }
+
+    if (
+      !['approved', 'pending', 'flagged', 'blocked'].includes(moderationStatus)
+    ) {
+      throw new ApiError(400, 'Invalid moderation status');
+    }
+
+    const updateFields = {
+      moderationStatus,
+      flagReason: moderationStatus === 'approved' ? '' : flagReason,
+      status: moderationStatus === 'blocked' ? 'Closed' : 'Open',
+    };
+
+    if (moderationStatus === 'flagged') updateFields.riskScore = 35;
+    if (moderationStatus === 'approved') updateFields.riskScore = 98;
+
+    const result = await Job.updateMany(
+      { _id: { $in: ids } },
+      { $set: updateFields }
+    );
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { modifiedCount: result.modifiedCount },
+          `Successfully updated ${result.modifiedCount} vacancies to status "${moderationStatus}"`
+        )
+      );
   }
-
-  if (!['approved', 'pending', 'flagged', 'blocked'].includes(moderationStatus)) {
-    throw new ApiError(400, 'Invalid moderation status');
-  }
-
-  const updateFields = {
-    moderationStatus,
-    flagReason: moderationStatus === 'approved' ? '' : flagReason,
-    status: moderationStatus === 'blocked' ? 'Closed' : 'Open',
-  };
-
-  if (moderationStatus === 'flagged') updateFields.riskScore = 35;
-  if (moderationStatus === 'approved') updateFields.riskScore = 98;
-
-  const result = await Job.updateMany(
-    { _id: { $in: ids } },
-    { $set: updateFields }
-  );
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { modifiedCount: result.modifiedCount },
-      `Successfully updated ${result.modifiedCount} vacancies to status "${moderationStatus}"`
-    )
-  );
-});
+);
 
 /**
  * @route   DELETE /api/jobs/admin/:id
@@ -1184,9 +1317,15 @@ export const deleteJobAdmin = asyncHandler(async (req, res) => {
     Application.deleteMany({ job: id }),
   ]);
 
-  return res.status(200).json(
-    new ApiResponse(200, {}, 'Job vacancy and all associated applications permanently purged')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        'Job vacancy and all associated applications permanently purged'
+      )
+    );
 });
 
 /**
@@ -1206,11 +1345,13 @@ export const bulkDeleteJobsAdmin = asyncHandler(async (req, res) => {
     Application.deleteMany({ job: { $in: ids } }),
   ]);
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { deletedCount: jobResult.deletedCount },
-      `Successfully purged ${jobResult.deletedCount} job postings`
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { deletedCount: jobResult.deletedCount },
+        `Successfully purged ${jobResult.deletedCount} job postings`
+      )
+    );
 });

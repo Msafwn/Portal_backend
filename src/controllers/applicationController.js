@@ -17,7 +17,9 @@ const computeMatchScore = (candidateSkills = [], jobRequiredSkills = []) => {
   if (!jobRequiredSkills || jobRequiredSkills.length === 0) {
     return {
       matchPercentage: 80,
-      matchedSkills: candidateSkills.map((s) => (typeof s === 'string' ? s : s.name)),
+      matchedSkills: candidateSkills.map((s) =>
+        typeof s === 'string' ? s : s.name
+      ),
       missingSkills: [],
     };
   }
@@ -38,7 +40,8 @@ const computeMatchScore = (candidateSkills = [], jobRequiredSkills = []) => {
     totalWeight += weight;
 
     const isMatched = candidateSkillNames.some(
-      (cs) => cs === skillName || cs.includes(skillName) || skillName.includes(cs)
+      (cs) =>
+        cs === skillName || cs.includes(skillName) || skillName.includes(cs)
     );
 
     if (isMatched) {
@@ -87,7 +90,10 @@ export const applyToJob = asyncHandler(async (req, res) => {
   }
 
   if (job.status === 'Closed') {
-    throw new ApiError(400, 'This job position is closed and no longer accepting applications');
+    throw new ApiError(
+      400,
+      'This job position is closed and no longer accepting applications'
+    );
   }
 
   // 2. Prevent duplicate application
@@ -108,10 +114,19 @@ export const applyToJob = asyncHandler(async (req, res) => {
 
       return res
         .status(200)
-        .json(new ApiResponse(200, existingApp, 'Application re-submitted successfully'));
+        .json(
+          new ApiResponse(
+            200,
+            existingApp,
+            'Application re-submitted successfully'
+          )
+        );
     }
 
-    throw new ApiError(400, 'You have already submitted an application for this role');
+    throw new ApiError(
+      400,
+      'You have already submitted an application for this role'
+    );
   }
 
   // 3. Compute or verify match percentage
@@ -121,7 +136,10 @@ export const applyToJob = asyncHandler(async (req, res) => {
   let missingSkills = clientMissingSkills;
 
   if (!matchPercentage || matchPercentage <= 0) {
-    const matchAnalysis = computeMatchScore(user?.skills || [], job.requiredSkills || []);
+    const matchAnalysis = computeMatchScore(
+      user?.skills || [],
+      job.requiredSkills || []
+    );
     matchPercentage = matchAnalysis.matchPercentage;
     matchedSkills = matchAnalysis.matchedSkills;
     missingSkills = matchAnalysis.missingSkills;
@@ -160,17 +178,25 @@ export const applyToJob = asyncHandler(async (req, res) => {
         },
       });
     } catch (notifErr) {
-      console.warn('Failed to send notification to employer:', notifErr.message);
+      console.warn(
+        'Failed to send notification to employer:',
+        notifErr.message
+      );
     }
   }
 
   const populatedApp = await Application.findById(application._id)
-    .populate('job', 'title company department location workMode jobType status')
+    .populate(
+      'job',
+      'title company department location workMode jobType status'
+    )
     .populate('applicant', 'name email avatar headline');
 
   return res
     .status(201)
-    .json(new ApiResponse(201, populatedApp, 'Application submitted successfully!'));
+    .json(
+      new ApiResponse(201, populatedApp, 'Application submitted successfully!')
+    );
 });
 
 /**
@@ -184,7 +210,15 @@ export const getMyApplications = asyncHandler(async (req, res) => {
 
   if (status && status !== 'all' && status !== 'All') {
     if (status === 'active' || status === 'Active') {
-      query.status = { $in: ['Pending', 'Under Review', 'Reviewed', 'Shortlisted', 'Interview Scheduled'] };
+      query.status = {
+        $in: [
+          'Pending',
+          'Under Review',
+          'Reviewed',
+          'Shortlisted',
+          'Interview Scheduled',
+        ],
+      };
     } else {
       query.status = new RegExp(`^${status}$`, 'i');
     }
@@ -193,7 +227,8 @@ export const getMyApplications = asyncHandler(async (req, res) => {
   const applications = await Application.find(query)
     .populate({
       path: 'job',
-      select: 'title company department location workMode jobType status salaryRange deadline employer',
+      select:
+        'title company department location workMode jobType status salaryRange deadline employer',
     })
     .sort({ appliedAt: -1, createdAt: -1 })
     .skip((Number(page) - 1) * Number(limit))
@@ -214,7 +249,9 @@ export const getMyApplications = asyncHandler(async (req, res) => {
   // Format applications to match frontend expectations
   const formattedList = filtered.map((app) => {
     const job = app.job || {};
-    const isShortlisted = (app.status || '').toLowerCase().includes('shortlist');
+    const isShortlisted = (app.status || '')
+      .toLowerCase()
+      .includes('shortlist');
     const isInterview = (app.status || '').toLowerCase().includes('interview');
     const isRejected = (app.status || '').toLowerCase().includes('reject');
 
@@ -238,7 +275,9 @@ export const getMyApplications = asyncHandler(async (req, res) => {
       matchPercentage: app.matchPercentage || 80,
       matchedSkills: app.matchedSkills || [],
       missingSkills: app.missingSkills || [],
-      appliedDate: app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : 'Recently',
+      appliedDate: app.appliedAt
+        ? new Date(app.appliedAt).toLocaleDateString()
+        : 'Recently',
       appliedAt: app.appliedAt || app.createdAt,
       status: app.status || 'Pending',
       statusVariant,
@@ -248,10 +287,10 @@ export const getMyApplications = asyncHandler(async (req, res) => {
         (isShortlisted
           ? 'Congratulations! Your profile has been shortlisted for the next recruitment stage.'
           : isInterview
-          ? 'Interview scheduled with hiring team.'
-          : isRejected
-          ? 'Position closed or candidate requirements not aligned.'
-          : 'Application received and currently under recruiter review.'),
+            ? 'Interview scheduled with hiring team.'
+            : isRejected
+              ? 'Position closed or candidate requirements not aligned.'
+              : 'Application received and currently under recruiter review.'),
       employerNotes: app.employerNotes || '',
       resumeUrl: app.resumeUrl || '',
       interview: app.interview || null,
@@ -259,10 +298,20 @@ export const getMyApplications = asyncHandler(async (req, res) => {
   });
 
   // Calculate summary metrics for candidate dashboard
-  const totalCount = await Application.countDocuments({ applicant: req.user.id });
+  const totalCount = await Application.countDocuments({
+    applicant: req.user.id,
+  });
   const activeCount = await Application.countDocuments({
     applicant: req.user.id,
-    status: { $in: ['Pending', 'Under Review', 'Reviewed', 'Shortlisted', 'Interview Scheduled'] },
+    status: {
+      $in: [
+        'Pending',
+        'Under Review',
+        'Reviewed',
+        'Shortlisted',
+        'Interview Scheduled',
+      ],
+    },
   });
   const shortlistedCount = await Application.countDocuments({
     applicant: req.user.id,
@@ -308,7 +357,10 @@ export const getJobApplicants = asyncHandler(async (req, res) => {
     job.employer.toString() !== req.user.id.toString() &&
     req.user.role !== 'admin'
   ) {
-    throw new ApiError(403, 'You are not authorized to view applicants for this position');
+    throw new ApiError(
+      403,
+      'You are not authorized to view applicants for this position'
+    );
   }
 
   const query = { job: jobId };
@@ -328,7 +380,8 @@ export const getJobApplicants = asyncHandler(async (req, res) => {
   const applications = await Application.find(query)
     .populate({
       path: 'applicant',
-      select: 'name email avatar headline bio phone location department skills education experience resumeUrl resumeFileName',
+      select:
+        'name email avatar headline bio phone location department skills education experience resumeUrl resumeFileName',
     })
     .sort(sortOption);
 
@@ -345,7 +398,9 @@ export const getJobApplicants = asyncHandler(async (req, res) => {
       headline: cand.headline || 'Aspiring Professional',
       department: cand.department || job.department || 'Technology',
       location: cand.location || 'Pakistan',
-      skills: (cand.skills || []).map((s) => (typeof s === 'string' ? s : s.name)),
+      skills: (cand.skills || []).map((s) =>
+        typeof s === 'string' ? s : s.name
+      ),
       education: cand.education || [],
       experience: cand.experience || [],
       resumeUrl: app.resumeUrl || cand.resumeUrl || '',
@@ -357,7 +412,9 @@ export const getJobApplicants = asyncHandler(async (req, res) => {
       coverNote: app.coverNote || '',
       employerNotes: app.employerNotes || '',
       appliedAt: app.appliedAt || app.createdAt,
-      appliedDate: app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : 'Recent',
+      appliedDate: app.appliedAt
+        ? new Date(app.appliedAt).toLocaleDateString()
+        : 'Recent',
       interview: app.interview || null,
     };
   });
@@ -483,14 +540,20 @@ export const getEmployerAllApplications = asyncHandler(async (req, res) => {
       education: eduStr,
       experienceYears: expStr,
       appliedAt: app.appliedAt || app.createdAt,
-      appliedDate: app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : 'Recent',
+      appliedDate: app.appliedAt
+        ? new Date(app.appliedAt).toLocaleDateString()
+        : 'Recent',
       interview: app.interview || null,
     };
   });
 
   const totalApplicants = applications.length;
-  const shortlisted = applications.filter((a) => a.status === 'Shortlisted').length;
-  const interviewScheduled = applications.filter((a) => a.status === 'Interview Scheduled').length;
+  const shortlisted = applications.filter(
+    (a) => a.status === 'Shortlisted'
+  ).length;
+  const interviewScheduled = applications.filter(
+    (a) => a.status === 'Interview Scheduled'
+  ).length;
 
   return res.status(200).json(
     new ApiResponse(
@@ -527,17 +590,28 @@ export const getApplicationById = asyncHandler(async (req, res) => {
   }
 
   // Authorization check: only applicant, job employer, or admin can view
-  const isApplicant = application.applicant?._id?.toString() === req.user.id.toString();
-  const isEmployer = application.job?.employer?.toString() === req.user.id.toString();
+  const isApplicant =
+    application.applicant?._id?.toString() === req.user.id.toString();
+  const isEmployer =
+    application.job?.employer?.toString() === req.user.id.toString();
   const isAdmin = req.user.role === 'admin';
 
   if (!isApplicant && !isEmployer && !isAdmin) {
-    throw new ApiError(403, 'You are not authorized to view this application dossier');
+    throw new ApiError(
+      403,
+      'You are not authorized to view this application dossier'
+    );
   }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, application, 'Application details retrieved successfully'));
+    .json(
+      new ApiResponse(
+        200,
+        application,
+        'Application details retrieved successfully'
+      )
+    );
 });
 
 /**
@@ -575,11 +649,15 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
   }
 
   // Ensure user is the employer or admin
-  const isEmployer = application.job?.employer?.toString() === req.user.id.toString();
+  const isEmployer =
+    application.job?.employer?.toString() === req.user.id.toString();
   const isAdmin = req.user.role === 'admin';
 
   if (!isEmployer && !isAdmin) {
-    throw new ApiError(403, 'Only the recruiting employer or admin can update this application status');
+    throw new ApiError(
+      403,
+      'Only the recruiting employer or admin can update this application status'
+    );
   }
 
   application.status = status;
@@ -641,7 +719,13 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, application, `Application status updated to ${status}`));
+    .json(
+      new ApiResponse(
+        200,
+        application,
+        `Application status updated to ${status}`
+      )
+    );
 });
 
 /**
@@ -650,7 +734,13 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
  */
 export const scheduleInterview = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { date, time, mode = 'Online', meetingLink = '', notes = '' } = req.body;
+  const {
+    date,
+    time,
+    mode = 'Online',
+    meetingLink = '',
+    notes = '',
+  } = req.body;
 
   if (!date || !time) {
     throw new ApiError(400, 'Interview date and time are required');
@@ -664,11 +754,15 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Application not found');
   }
 
-  const isEmployer = application.job?.employer?.toString() === req.user.id.toString();
+  const isEmployer =
+    application.job?.employer?.toString() === req.user.id.toString();
   const isAdmin = req.user.role === 'admin';
 
   if (!isEmployer && !isAdmin) {
-    throw new ApiError(403, 'Unauthorized to schedule interview for this candidate');
+    throw new ApiError(
+      403,
+      'Unauthorized to schedule interview for this candidate'
+    );
   }
 
   application.status = 'Interview Scheduled';
@@ -701,15 +795,22 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
       },
     });
   } catch (err) {
-    console.warn('Failed to notify candidate of interview in-app:', err.message);
+    console.warn(
+      'Failed to notify candidate of interview in-app:',
+      err.message
+    );
   }
 
   // 2. Real-time Email Notification via Gmail SMTP
   try {
-    const candidateEmail = req.body.candidateEmail || application.applicant?.email;
-    const candidateName = req.body.candidateName || application.applicant?.name || 'Candidate';
-    const jobTitle = req.body.jobTitle || application.job?.title || 'Selected Role';
-    const companyName = req.body.company || application.job?.company || 'Recruiting Company';
+    const candidateEmail =
+      req.body.candidateEmail || application.applicant?.email;
+    const candidateName =
+      req.body.candidateName || application.applicant?.name || 'Candidate';
+    const jobTitle =
+      req.body.jobTitle || application.job?.title || 'Selected Role';
+    const companyName =
+      req.body.company || application.job?.company || 'Recruiting Company';
 
     if (candidateEmail) {
       await sendInterviewInvitationEmail({
@@ -725,16 +826,21 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
       });
     }
   } catch (emailErr) {
-    console.warn('Real email dispatch failed (non-blocking):', emailErr.message);
+    console.warn(
+      'Real email dispatch failed (non-blocking):',
+      emailErr.message
+    );
   }
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      application,
-      `Interview scheduled successfully for ${date} at ${time}`
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        application,
+        `Interview scheduled successfully for ${date} at ${time}`
+      )
+    );
 });
 
 /**
@@ -749,19 +855,31 @@ export const withdrawApplication = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Application not found');
   }
 
-  if (application.applicant.toString() !== req.user.id.toString()) {
+  const applicantId = application.applicant?._id || application.applicant;
+  const currentUserId = req.user?._id || req.user?.id || req.user;
+
+  if (
+    applicantId &&
+    currentUserId &&
+    applicantId.toString() !== currentUserId.toString()
+  ) {
     throw new ApiError(403, 'You can only withdraw your own applications');
   }
 
   if (application.status === 'Accepted') {
-    throw new ApiError(400, 'Cannot withdraw an already accepted job application');
+    throw new ApiError(
+      400,
+      'Cannot withdraw an already accepted job application'
+    );
   }
 
   application.status = 'Withdrawn';
   await application.save();
 
   // Decrement job applicant counter
-  await Job.findByIdAndUpdate(application.job, { $inc: { applicantsCount: -1 } });
+  await Job.findByIdAndUpdate(application.job, {
+    $inc: { applicantsCount: -1 },
+  });
 
   return res
     .status(200)
@@ -796,7 +914,8 @@ export const evaluateApplicantATS = asyncHandler(async (req, res) => {
         name: candidate?.name || 'Applicant',
         headline: candidate?.headline || '',
         bio: candidate?.bio || '',
-        department: candidate?.department || job?.department || 'Information Technology',
+        department:
+          candidate?.department || job?.department || 'Information Technology',
         role: candidate?.role || 'student',
         skills: candidate?.skills || application.matchedSkills || [],
         education: candidate?.education || [],
@@ -840,8 +959,10 @@ export const evaluateApplicantATS = asyncHandler(async (req, res) => {
       'ATS details retrieved from stored application'
     )
   );
+});
+
 /**
- * 9. Employer: Send Direct Interview Email to Candidate (Works with mock or DB candidates)
+ * 10. Employer: Send Direct Interview Email to Candidate (Works with mock or DB candidates)
  * POST /api/applications/send-interview-email
  */
 export const sendDirectInterviewEmail = asyncHandler(async (req, res) => {
@@ -858,10 +979,14 @@ export const sendDirectInterviewEmail = asyncHandler(async (req, res) => {
     applicationId,
   } = req.body;
 
-  const targetEmail = candidateEmail || process.env.EMAIL_USER || 'safwanarshad782@gmail.com';
+  const targetEmail =
+    candidateEmail || process.env.EMAIL_USER || 'safwanarshad782@gmail.com';
 
   if (!targetEmail) {
-    throw new ApiError(400, 'Candidate email is required to send interview invitation');
+    throw new ApiError(
+      400,
+      'Candidate email is required to send interview invitation'
+    );
   }
 
   // Update MongoDB application if valid 24-char ObjectId is passed
@@ -914,5 +1039,3 @@ export const sendDirectInterviewEmail = asyncHandler(async (req, res) => {
     )
   );
 });
-
-

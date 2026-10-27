@@ -23,7 +23,8 @@ const CAREER_ROADMAPS = {
           'Tailwind CSS & Component Systems',
           'API Integration & Caching',
         ],
-        project: 'Build a production-ready SaaS dashboard with role-based auth.',
+        project:
+          'Build a production-ready SaaS dashboard with role-based auth.',
       },
       {
         phase: 'Phase 2: Scalable Backend & Microservices',
@@ -45,7 +46,8 @@ const CAREER_ROADMAPS = {
           'Redis caching & rate limiting',
           'AWS EC2 / Render hosting',
         ],
-        project: 'Deploy the full-stack application with automated SSL and monitoring.',
+        project:
+          'Deploy the full-stack application with automated SSL and monitoring.',
       },
     ],
   },
@@ -84,7 +86,8 @@ const CAREER_ROADMAPS = {
           'Hugging Face Transformers & Embeddings',
           'Vector databases & RAG',
         ],
-        project: 'Build a semantic resume parser using NLP and vector embeddings.',
+        project:
+          'Build a semantic resume parser using NLP and vector embeddings.',
       },
     ],
   },
@@ -144,11 +147,18 @@ const generateAiCareerAdvice = async (userMessage, candidate, jobs = []) => {
   ) {
     const topJobs = jobs.slice(0, 3).map((j) => {
       // Calculate quick skill match
-      const reqSkills = (j.requiredSkills || []).map((s) => (s.name || '').toLowerCase());
-      const matched = reqSkills.filter((rs) =>
-        candidateSkills.some((cs) => cs === rs || cs.includes(rs) || rs.includes(cs))
+      const reqSkills = (j.requiredSkills || []).map((s) =>
+        (s.name || '').toLowerCase()
       );
-      const matchPct = reqSkills.length > 0 ? Math.round((matched.length / reqSkills.length) * 100) : 75;
+      const matched = reqSkills.filter((rs) =>
+        candidateSkills.some(
+          (cs) => cs === rs || cs.includes(rs) || rs.includes(cs)
+        )
+      );
+      const matchPct =
+        reqSkills.length > 0
+          ? Math.round((matched.length / reqSkills.length) * 100)
+          : 75;
 
       return {
         id: j._id,
@@ -158,7 +168,9 @@ const generateAiCareerAdvice = async (userMessage, candidate, jobs = []) => {
         location: j.location,
         workMode: j.workMode,
         jobType: j.jobType,
-        salary: j.salaryRange?.min ? `${j.salaryRange.min.toLocaleString()} PKR` : 'Competitive',
+        salary: j.salaryRange?.min
+          ? `${j.salaryRange.min.toLocaleString()} PKR`
+          : 'Competitive',
         matchPercentage: Math.min(98, Math.max(50, matchPct)),
         matchedSkills: matched,
       };
@@ -185,9 +197,18 @@ const generateAiCareerAdvice = async (userMessage, candidate, jobs = []) => {
     query.includes('path')
   ) {
     let key = 'full stack';
-    if (query.includes('data') || query.includes('ai') || query.includes('python') || query.includes('machine')) {
+    if (
+      query.includes('data') ||
+      query.includes('ai') ||
+      query.includes('python') ||
+      query.includes('machine')
+    ) {
       key = 'data science';
-    } else if (query.includes('devops') || query.includes('cloud') || query.includes('docker')) {
+    } else if (
+      query.includes('devops') ||
+      query.includes('cloud') ||
+      query.includes('docker')
+    ) {
       key = 'devops';
     }
 
@@ -263,9 +284,11 @@ export const getChatSessions = asyncHandler(async (req, res) => {
     .sort({ updatedAt: -1 })
     .lean();
 
-  return res.status(200).json(
-    new ApiResponse(200, sessions, 'Chat sessions retrieved successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, sessions, 'Chat sessions retrieved successfully')
+    );
 });
 
 /**
@@ -298,7 +321,10 @@ export const sendChatMessage = asyncHandler(async (req, res) => {
     id: `msg-user-${Date.now()}`,
     sender: 'user',
     text: trimmed,
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    timestamp: new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
     attachments: null,
     source: 'user',
   };
@@ -306,18 +332,31 @@ export const sendChatMessage = asyncHandler(async (req, res) => {
 
   // Fetch candidate profile & active open jobs for intelligent context
   const [candidate, openJobs] = await Promise.all([
-    User.findById(req.user._id).select('name role department skills experience education headline bio'),
-    Job.find({ status: 'Open' }).select('title company department location workMode jobType salaryRange requiredSkills').limit(6),
+    User.findById(req.user._id).select(
+      'name role department skills experience education headline bio'
+    ),
+    Job.find({ status: 'Open' })
+      .select(
+        'title company department location workMode jobType salaryRange requiredSkills'
+      )
+      .limit(6),
   ]);
 
   // Generate AI Response
-  const aiOutput = await generateAiCareerAdvice(trimmed, candidate || req.user, openJobs);
+  const aiOutput = await generateAiCareerAdvice(
+    trimmed,
+    candidate || req.user,
+    openJobs
+  );
 
   const aiMsg = {
     id: `msg-ai-${Date.now()}`,
     sender: 'ai',
     text: aiOutput.text,
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    timestamp: new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
     attachments: aiOutput.attachments,
     source: aiOutput.source,
   };
@@ -367,9 +406,11 @@ export const saveChatSession = asyncHandler(async (req, res) => {
     { new: true, upsert: true }
   );
 
-  return res.status(200).json(
-    new ApiResponse(200, updatedSession, 'Chat session saved successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedSession, 'Chat session saved successfully')
+    );
 });
 
 /**
@@ -388,9 +429,9 @@ export const getChatSessionById = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Chat session not found');
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, session, 'Chat session retrieved successfully')
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, session, 'Chat session retrieved successfully'));
 });
 
 /**
@@ -409,9 +450,9 @@ export const deleteChatSession = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Chat session not found');
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, null, 'Chat session deleted successfully')
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, 'Chat session deleted successfully'));
 });
 
 /**
@@ -421,7 +462,7 @@ export const deleteChatSession = asyncHandler(async (req, res) => {
 export const clearAllChatSessions = asyncHandler(async (req, res) => {
   await ChatSession.deleteMany({ user: req.user._id });
 
-  return res.status(200).json(
-    new ApiResponse(200, null, 'All chat sessions cleared successfully')
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, 'All chat sessions cleared successfully'));
 });

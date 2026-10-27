@@ -31,11 +31,13 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       enum: [
         'Pending',
+        'Under Review',
         'Reviewed',
         'Shortlisted',
         'Interview Scheduled',
         'Accepted',
         'Rejected',
+        'Withdrawn',
       ],
       default: 'Pending',
     },

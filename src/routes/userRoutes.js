@@ -66,37 +66,147 @@ router.post('/resume', protect, updateResume);
 // ADMIN MANAGEMENT ROUTES
 // ===================================
 // Executive Dashboard Analytics Route
-router.get('/admin/dashboard', protect, authorizeRoles('admin', 'super_admin'), getAdminDashboardStats);
+router.get(
+  '/admin/dashboard',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAdminDashboardStats
+);
 
 // AI Algorithm Settings & Matching Formulation Routes (Must be before :id)
-router.get('/admin/ai-settings', protect, authorizeRoles('admin', 'super_admin'), getAdminAiSettings);
-router.put('/admin/ai-settings', protect, authorizeRoles('admin', 'super_admin'), updateAdminAiSettings);
-router.post('/admin/ai-settings/reset', protect, authorizeRoles('admin', 'super_admin'), resetAdminAiSettings);
+router.get(
+  '/admin/ai-settings',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAdminAiSettings
+);
+router.put(
+  '/admin/ai-settings',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  updateAdminAiSettings
+);
+router.post(
+  '/admin/ai-settings/reset',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  resetAdminAiSettings
+);
 
 // Skills Taxonomy Database Admin Routes (Must be before :id)
-router.get('/admin/skills', protect, authorizeRoles('admin', 'super_admin'), getAllSkillsAdmin);
-router.post('/admin/skills', protect, authorizeRoles('admin', 'super_admin'), createSkillAdmin);
-router.delete('/admin/skills/:id', protect, authorizeRoles('admin', 'super_admin'), deleteSkillAdmin);
+router.get(
+  '/admin/skills',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAllSkillsAdmin
+);
+router.post(
+  '/admin/skills',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  createSkillAdmin
+);
+router.delete(
+  '/admin/skills/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  deleteSkillAdmin
+);
 
 // Forensic Audit Trail & Security Sentinel Desk (Must be before :id)
-router.get('/admin/logs', protect, authorizeRoles('admin', 'super_admin'), getAdminAuditAndSecurityLogs);
-router.put('/admin/security-alerts/:id/resolve', protect, authorizeRoles('admin', 'super_admin'), resolveSecurityAlertAdmin);
-router.post('/admin/security/block-ip', protect, authorizeRoles('admin', 'super_admin'), blockIpAddressAdmin);
+router.get(
+  '/admin/logs',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAdminAuditAndSecurityLogs
+);
+router.put(
+  '/admin/security-alerts/:id/resolve',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  resolveSecurityAlertAdmin
+);
+router.post(
+  '/admin/security/block-ip',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  blockIpAddressAdmin
+);
 
 // Employer & Corporate Verification Admin Routes (must be before :id)
-router.get('/admin/employers/all', protect, authorizeRoles('admin', 'super_admin'), getAllEmployersAdmin);
-router.get('/admin/employers', protect, authorizeRoles('admin', 'super_admin'), getAllEmployersAdmin);
-router.post('/admin/employers/bulk-verification', protect, authorizeRoles('admin', 'super_admin'), bulkUpdateEmployerVerificationAdmin);
-router.get('/admin/employers/:id', protect, authorizeRoles('admin', 'super_admin'), getEmployerByIdAdmin);
-router.put('/admin/employers/:id/verification', protect, authorizeRoles('admin', 'super_admin'), updateEmployerVerificationAdmin);
-router.delete('/admin/employers/:id', protect, authorizeRoles('admin', 'super_admin'), deleteEmployerAdmin);
+router.get(
+  '/admin/employers/all',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAllEmployersAdmin
+);
+router.get(
+  '/admin/employers',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAllEmployersAdmin
+);
+router.post(
+  '/admin/employers/bulk-verification',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  bulkUpdateEmployerVerificationAdmin
+);
+router.get(
+  '/admin/employers/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getEmployerByIdAdmin
+);
+router.put(
+  '/admin/employers/:id/verification',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  updateEmployerVerificationAdmin
+);
+router.delete(
+  '/admin/employers/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  deleteEmployerAdmin
+);
 
 // Candidate Admin Routes
-router.get('/admin/all', protect, authorizeRoles('admin', 'super_admin'), getAllUsersAdmin);
-router.post('/admin/bulk-status', protect, authorizeRoles('admin', 'super_admin'), bulkUpdateUserStatusByAdmin);
-router.post('/admin/:id/ai-evaluate', protect, authorizeRoles('admin', 'super_admin'), evaluateCandidateAiByAdmin);
-router.put('/admin/:id/status', protect, authorizeRoles('admin', 'super_admin'), updateUserStatusByAdmin);
-router.delete('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), deleteUserByAdmin);
-router.get('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), getUserByIdAdmin);
+router.get(
+  '/admin/all',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAllUsersAdmin
+);
+router.post(
+  '/admin/bulk-status',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  bulkUpdateUserStatusByAdmin
+);
+router.post(
+  '/admin/:id/ai-evaluate',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  evaluateCandidateAiByAdmin
+);
+router.put(
+  '/admin/:id/status',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  updateUserStatusByAdmin
+);
+router.delete(
+  '/admin/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  deleteUserByAdmin
+);
+router.get(
+  '/admin/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getUserByIdAdmin
+);
 
 export default router;

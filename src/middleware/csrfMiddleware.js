@@ -27,8 +27,7 @@ export const csrfProtection = (req, res, next) => {
   }
 
   // 3. Extract CSRF token header submitted by Axios
-  const csrfHeader =
-    req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
+  const csrfHeader = req.headers['x-xsrf-token'] || req.headers['x-csrf-token'];
 
   // Skip CSRF check for initial unauthenticated login/register calls
   const isAuthInitial =

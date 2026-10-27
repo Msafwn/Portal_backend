@@ -25,7 +25,13 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['job_match', 'application_status', 'interview_result', 'system', 'general'],
+      enum: [
+        'job_match',
+        'application_status',
+        'interview_result',
+        'system',
+        'general',
+      ],
       default: 'general',
     },
     read: {

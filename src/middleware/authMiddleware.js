@@ -77,4 +77,3 @@ export const optionalProtect = asyncHandler(async (req, res, next) => {
   }
   next();
 });
-

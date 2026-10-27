@@ -44,7 +44,9 @@ export const saveInterviewSession = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, session, 'Interview session saved successfully'));
+    .json(
+      new ApiResponse(200, session, 'Interview session saved successfully')
+    );
 });
 
 /**
@@ -60,7 +62,11 @@ export const getMyInterviews = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, interviews, 'Interview history retrieved successfully')
+      new ApiResponse(
+        200,
+        interviews,
+        'Interview history retrieved successfully'
+      )
     );
 });
 

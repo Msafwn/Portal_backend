@@ -31,7 +31,17 @@ router.put('/profile', protect, updateProfile);
 router.post('/logout', protect, logout);
 
 // Admin User Management
-router.get('/users', protect, authorizeRoles('admin', 'super_admin'), getAllUsers);
-router.put('/users/:id', protect, authorizeRoles('admin', 'super_admin'), updateUserByAdmin);
+router.get(
+  '/users',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAllUsers
+);
+router.put(
+  '/users/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  updateUserByAdmin
+);
 
 export default router;

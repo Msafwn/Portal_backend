@@ -47,12 +47,7 @@ router.get(
   getEmployerMyJobs
 );
 
-router.post(
-  '/',
-  protect,
-  authorizeRoles('employer', 'admin'),
-  createJob
-);
+router.post('/', protect, authorizeRoles('employer', 'admin'), createJob);
 
 router.post(
   '/ai-generate-description',
@@ -64,30 +59,50 @@ router.post(
 // -------------------------------------------------------------
 // Admin Vacancy Moderation Endpoints (must be placed before /:id)
 // -------------------------------------------------------------
-router.get('/admin/all', protect, authorizeRoles('admin', 'super_admin'), getAllJobsAdmin);
-router.post('/admin/bulk-status', protect, authorizeRoles('admin', 'super_admin'), bulkUpdateJobModerationStatusAdmin);
-router.post('/admin/bulk-delete', protect, authorizeRoles('admin', 'super_admin'), bulkDeleteJobsAdmin);
-router.get('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), getJobByIdAdmin);
-router.put('/admin/:id/status', protect, authorizeRoles('admin', 'super_admin'), updateJobModerationStatusAdmin);
-router.delete('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), deleteJobAdmin);
+router.get(
+  '/admin/all',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getAllJobsAdmin
+);
+router.post(
+  '/admin/bulk-status',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  bulkUpdateJobModerationStatusAdmin
+);
+router.post(
+  '/admin/bulk-delete',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  bulkDeleteJobsAdmin
+);
+router.get(
+  '/admin/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  getJobByIdAdmin
+);
+router.put(
+  '/admin/:id/status',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  updateJobModerationStatusAdmin
+);
+router.delete(
+  '/admin/:id',
+  protect,
+  authorizeRoles('admin', 'super_admin'),
+  deleteJobAdmin
+);
 
 // -------------------------------------------------------------
 // Single Job Details Dossier
 // -------------------------------------------------------------
 router.get('/:id', optionalProtect, getJobById);
 
-router.put(
-  '/:id',
-  protect,
-  authorizeRoles('employer', 'admin'),
-  updateJob
-);
+router.put('/:id', protect, authorizeRoles('employer', 'admin'), updateJob);
 
-router.delete(
-  '/:id',
-  protect,
-  authorizeRoles('employer', 'admin'),
-  deleteJob
-);
+router.delete('/:id', protect, authorizeRoles('employer', 'admin'), deleteJob);
 
 export default router;

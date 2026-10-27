@@ -55,10 +55,18 @@ export const uploadResume = multer({
   fileFilter: (req, file, cb) => {
     const allowed = ['.pdf', '.doc', '.docx', '.txt'];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext) || file.mimetype.includes('pdf') || file.mimetype.includes('word')) {
+    if (
+      allowed.includes(ext) ||
+      file.mimetype.includes('pdf') ||
+      file.mimetype.includes('word')
+    ) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF, DOC, DOCX, or TXT documents are allowed for resume'));
+      cb(
+        new Error(
+          'Only PDF, DOC, DOCX, or TXT documents are allowed for resume'
+        )
+      );
     }
   },
 }).single('resume');

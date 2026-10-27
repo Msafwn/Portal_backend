@@ -154,10 +154,15 @@ export const sendInterviewInvitationEmail = async ({
       subject,
       html: htmlContent,
     });
-    console.log(`📧 [Email Dispatched] Interview invite sent to ${to} (MessageID: ${info.messageId})`);
+    console.log(
+      `📧 [Email Dispatched] Interview invite sent to ${to} (MessageID: ${info.messageId})`
+    );
     return true;
   } catch (error) {
-    console.error(`❌ [Email Error] Could not send interview email to ${to}:`, error.message);
+    console.error(
+      `❌ [Email Error] Could not send interview email to ${to}:`,
+      error.message
+    );
     return false;
   }
 };

@@ -58,7 +58,9 @@ export const computeCandidateStats = (user) => {
  * @access  Private
  */
 export const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('-password -refreshToken');
+  const user = await User.findById(req.user.id).select(
+    '-password -refreshToken'
+  );
 
   if (!user) {
     throw new ApiError(404, 'User profile not found');
@@ -131,9 +133,15 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
       degree: (edu.degree || '').trim(),
       institute: (edu.institute || '').trim(),
       field: (edu.field || user.department || '').trim(),
-      startYear: edu.startYear || (edu.graduationYear ? Number(edu.graduationYear) - 4 : undefined),
-      endYear: edu.endYear || (edu.graduationYear ? Number(edu.graduationYear) : undefined),
-      graduationYear: edu.graduationYear ? String(edu.graduationYear).trim() : '',
+      startYear:
+        edu.startYear ||
+        (edu.graduationYear ? Number(edu.graduationYear) - 4 : undefined),
+      endYear:
+        edu.endYear ||
+        (edu.graduationYear ? Number(edu.graduationYear) : undefined),
+      graduationYear: edu.graduationYear
+        ? String(edu.graduationYear).trim()
+        : '',
       gradeOrCgpa: edu.gradeOrCgpa || edu.cgpa || '',
       cgpa: edu.cgpa || edu.gradeOrCgpa || '',
       status: edu.status || 'Completed',
@@ -164,7 +172,9 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
   user.profileCompleted = true;
   await user.save();
 
-  const updatedUser = await User.findById(user._id).select('-password -refreshToken');
+  const updatedUser = await User.findById(user._id).select(
+    '-password -refreshToken'
+  );
   const stats = computeCandidateStats(updatedUser);
 
   return res.status(200).json(
@@ -208,9 +218,9 @@ export const changeUserPassword = asyncHandler(async (req, res) => {
   user.password = newPassword;
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, {}, 'Password updated successfully')
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'Password updated successfully'));
 });
 
 // ==========================================
@@ -247,9 +257,15 @@ export const addEducation = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(201).json(
-    new ApiResponse(201, user.education, 'Education qualification added successfully')
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        user.education,
+        'Education qualification added successfully'
+      )
+    );
 });
 
 /**
@@ -270,7 +286,17 @@ export const updateEducation = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Education record not found');
   }
 
-  const fields = ['degree', 'institute', 'field', 'cgpa', 'gradeOrCgpa', 'graduationYear', 'startYear', 'endYear', 'status'];
+  const fields = [
+    'degree',
+    'institute',
+    'field',
+    'cgpa',
+    'gradeOrCgpa',
+    'graduationYear',
+    'startYear',
+    'endYear',
+    'status',
+  ];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) {
       eduItem[f] = req.body[f];
@@ -279,9 +305,15 @@ export const updateEducation = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.education, 'Education record updated successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.education,
+        'Education record updated successfully'
+      )
+    );
 });
 
 /**
@@ -303,9 +335,15 @@ export const deleteEducation = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.education, 'Education qualification removed successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.education,
+        'Education qualification removed successfully'
+      )
+    );
 });
 
 // ==========================================
@@ -318,7 +356,8 @@ export const deleteEducation = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const addExperience = asyncHandler(async (req, res) => {
-  const { type, title, company, duration, description, link, location } = req.body;
+  const { type, title, company, duration, description, link, location } =
+    req.body;
 
   if (!title) {
     throw new ApiError(400, 'Title is required');
@@ -332,18 +371,28 @@ export const addExperience = asyncHandler(async (req, res) => {
   user.experience.unshift({
     type: type || 'experience',
     title: title.trim(),
-    company: company?.trim() || (type === 'project' ? 'Portfolio Project' : 'Company / Organization'),
+    company:
+      company?.trim() ||
+      (type === 'project' ? 'Portfolio Project' : 'Company / Organization'),
     duration: duration?.trim() || '2025 – Present',
-    description: description?.trim() || 'Hands-on practical deliverables and accomplishments.',
+    description:
+      description?.trim() ||
+      'Hands-on practical deliverables and accomplishments.',
     link: link?.trim() || '',
     location: location?.trim() || '',
   });
 
   await user.save();
 
-  return res.status(201).json(
-    new ApiResponse(201, user.experience, 'Experience / Project record added successfully')
-  );
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        user.experience,
+        'Experience / Project record added successfully'
+      )
+    );
 });
 
 /**
@@ -364,7 +413,18 @@ export const updateExperience = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Experience record not found');
   }
 
-  const fields = ['type', 'title', 'company', 'duration', 'location', 'description', 'link', 'current', 'startDate', 'endDate'];
+  const fields = [
+    'type',
+    'title',
+    'company',
+    'duration',
+    'location',
+    'description',
+    'link',
+    'current',
+    'startDate',
+    'endDate',
+  ];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) {
       expItem[f] = req.body[f];
@@ -373,9 +433,15 @@ export const updateExperience = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.experience, 'Experience / Project record updated successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.experience,
+        'Experience / Project record updated successfully'
+      )
+    );
 });
 
 /**
@@ -397,9 +463,15 @@ export const deleteExperience = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.experience, 'Experience / Project record removed successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.experience,
+        'Experience / Project record removed successfully'
+      )
+    );
 });
 
 // ==========================================
@@ -434,9 +506,11 @@ export const updateSkills = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.skills, 'Technical skills updated successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.skills, 'Technical skills updated successfully')
+    );
 });
 
 /**
@@ -457,9 +531,15 @@ export const deleteSkill = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, user.skills, `Skill "${target}" removed successfully`)
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user.skills,
+        `Skill "${target}" removed successfully`
+      )
+    );
 });
 
 // ==========================================
@@ -488,7 +568,10 @@ export const updateResume = asyncHandler(async (req, res) => {
 
   // Simulated ATS match score calibration
   const skillsCount = user.skills?.length || 0;
-  const atsScore = Math.min(96, Math.max(78, 80 + Math.floor(skillsCount * 1.5)));
+  const atsScore = Math.min(
+    96,
+    Math.max(78, 80 + Math.floor(skillsCount * 1.5))
+  );
 
   return res.status(200).json(
     new ApiResponse(
@@ -593,7 +676,8 @@ export const getAllUsersAdmin = asyncHandler(async (req, res) => {
     const stats = computeCandidateStats(user);
     const appCount = appCountMap.get(user._id.toString()) || 0;
 
-    const primaryEdu = user.education && user.education.length > 0 ? user.education[0] : null;
+    const primaryEdu =
+      user.education && user.education.length > 0 ? user.education[0] : null;
     const institutionStr = primaryEdu?.institute || 'National Higher Education';
     const cgpaStr = primaryEdu?.gradeOrCgpa || primaryEdu?.cgpa || '3.70 / 4.0';
 
@@ -611,7 +695,9 @@ export const getAllUsersAdmin = asyncHandler(async (req, res) => {
       targetRole: user.headline || 'Full-Stack Software Practitioner',
       institution: institutionStr,
       cgpa: cgpaStr,
-      skills: (user.skills || []).map((s) => (typeof s === 'string' ? s : s.name)),
+      skills: (user.skills || []).map((s) =>
+        typeof s === 'string' ? s : s.name
+      ),
       matchScore: stats.matchIndex,
       profileCompletion: stats.profileCompletion,
       applicationsCount: appCount,
@@ -659,7 +745,10 @@ export const getAllUsersAdmin = asyncHandler(async (req, res) => {
           totalCandidates,
           activeCount,
           bannedCount,
-          pendingCount: Math.max(0, totalCandidates - activeCount - bannedCount),
+          pendingCount: Math.max(
+            0,
+            totalCandidates - activeCount - bannedCount
+          ),
           totalApplications,
           avgMatchScore: 88,
         },
@@ -733,9 +822,15 @@ export const updateUserStatusByAdmin = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'User not found');
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, updatedUser, `User status updated to "${updatedUser.status}" successfully`)
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedUser,
+        `User status updated to "${updatedUser.status}" successfully`
+      )
+    );
 });
 
 /**
@@ -763,13 +858,15 @@ export const bulkUpdateUserStatusByAdmin = asyncHandler(async (req, res) => {
     { $set: updateFields }
   );
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { modifiedCount: result.modifiedCount },
-      `${result.modifiedCount} user accounts set to ${status}`
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { modifiedCount: result.modifiedCount },
+        `${result.modifiedCount} user accounts set to ${status}`
+      )
+    );
 });
 
 /**
@@ -805,18 +902,30 @@ export const evaluateCandidateAiByAdmin = asyncHandler(async (req, res) => {
     if (pyRes.ok) {
       const pyJson = await pyRes.json();
       const aiData = pyJson?.data || pyJson;
-      return res.status(200).json(
-        new ApiResponse(200, { candidateId: user._id, aiData }, 'AI Candidate Evaluation completed via Python microservice')
-      );
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { candidateId: user._id, aiData },
+            'AI Candidate Evaluation completed via Python microservice'
+          )
+        );
     }
   } catch (err) {
     console.warn('Python AI service note:', err.message);
   }
 
   const stats = computeCandidateStats(user);
-  return res.status(200).json(
-    new ApiResponse(200, { candidateId: user._id, stats }, 'Default candidate AI metrics calculated')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { candidateId: user._id, stats },
+        'Default candidate AI metrics calculated'
+      )
+    );
 });
 
 /**
@@ -837,9 +946,15 @@ export const deleteUserByAdmin = asyncHandler(async (req, res) => {
     Application.deleteMany({ applicant: id }),
   ]);
 
-  return res.status(200).json(
-    new ApiResponse(200, {}, 'User account and applications permanently purged')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        'User account and applications permanently purged'
+      )
+    );
 });
 
 // =======================================================
@@ -861,7 +976,8 @@ const DEFAULT_ENTERPRISES = [
       industry: 'Computer Science & IT',
       logo: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?w=120',
       website: 'https://www.systemsltd.com',
-      description: 'Premier global technology consulting firm providing enterprise digital transformation and cloud modernization services.',
+      description:
+        'Premier global technology consulting firm providing enterprise digital transformation and cloud modernization services.',
       companySize: '1000+ Employees',
       tagline: 'Leading Digital Transformation in Pakistan & Global Markets',
       logoInitials: 'SL',
@@ -873,9 +989,21 @@ const DEFAULT_ENTERPRISES = [
       submittedDate: 'Jan 05, 2026',
       rejectionReason: '',
       documents: [
-        { name: 'SECP Certificate of Incorporation', verified: true, fileUrl: '' },
-        { name: 'FBR NTN Active Taxpayer Profile', verified: true, fileUrl: '' },
-        { name: 'Corporate Domain Verification (systemsltd.com)', verified: true, fileUrl: '' },
+        {
+          name: 'SECP Certificate of Incorporation',
+          verified: true,
+          fileUrl: '',
+        },
+        {
+          name: 'FBR NTN Active Taxpayer Profile',
+          verified: true,
+          fileUrl: '',
+        },
+        {
+          name: 'Corporate Domain Verification (systemsltd.com)',
+          verified: true,
+          fileUrl: '',
+        },
       ],
     },
   },
@@ -893,7 +1021,8 @@ const DEFAULT_ENTERPRISES = [
       industry: 'Medical & Healthcare',
       logo: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=120',
       website: 'https://www.shifa.com.pk',
-      description: 'JCI-accredited tertiary care medical healthcare system delivering compassionate patient care, surgical residencies, and clinical research.',
+      description:
+        'JCI-accredited tertiary care medical healthcare system delivering compassionate patient care, surgical residencies, and clinical research.',
       companySize: '500-1000 Employees',
       tagline: 'Compassion, Quality & Medical Excellence',
       logoInitials: 'SIH',
@@ -905,7 +1034,11 @@ const DEFAULT_ENTERPRISES = [
       submittedDate: 'Jan 28, 2026',
       rejectionReason: '',
       documents: [
-        { name: 'PMDC / PMC Hospital Accreditation', verified: true, fileUrl: '' },
+        {
+          name: 'PMDC / PMC Hospital Accreditation',
+          verified: true,
+          fileUrl: '',
+        },
         { name: 'SECP Registration Certificate', verified: true, fileUrl: '' },
         { name: 'FBR Tax Compliance Certificate', verified: true, fileUrl: '' },
       ],
@@ -925,7 +1058,8 @@ const DEFAULT_ENTERPRISES = [
       industry: 'Engineering & Construction',
       logo: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=120',
       website: 'https://www.descon.com',
-      description: 'Leading industrial conglomerate with operations in engineering, industrial manufacturing, and mega infrastructure projects.',
+      description:
+        'Leading industrial conglomerate with operations in engineering, industrial manufacturing, and mega infrastructure projects.',
       companySize: '1000+ Employees',
       tagline: 'Engineering Excellence Across Asia & the Middle East',
       logoInitials: 'DEL',
@@ -937,9 +1071,17 @@ const DEFAULT_ENTERPRISES = [
       submittedDate: 'Apr 04, 2026',
       rejectionReason: '',
       documents: [
-        { name: 'Pakistan Engineering Council (PEC) License', verified: true, fileUrl: '' },
+        {
+          name: 'Pakistan Engineering Council (PEC) License',
+          verified: true,
+          fileUrl: '',
+        },
         { name: 'FBR Active Tax Certificate', verified: true, fileUrl: '' },
-        { name: 'Corporate Board Resolution Letter', verified: false, fileUrl: '' },
+        {
+          name: 'Corporate Board Resolution Letter',
+          verified: false,
+          fileUrl: '',
+        },
       ],
     },
   },
@@ -957,7 +1099,8 @@ const DEFAULT_ENTERPRISES = [
       industry: 'Business & Finance',
       logo: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=120',
       website: 'https://www.hbl.com',
-      description: 'Pakistan’s largest commercial banking network fostering technological innovation in retail, Islamic, and investment banking.',
+      description:
+        'Pakistan’s largest commercial banking network fostering technological innovation in retail, Islamic, and investment banking.',
       companySize: '1000+ Employees',
       tagline: 'Enabling Dreams across Pakistan and Overseas',
       logoInitials: 'HBL',
@@ -969,9 +1112,21 @@ const DEFAULT_ENTERPRISES = [
       submittedDate: 'Jan 02, 2026',
       rejectionReason: '',
       documents: [
-        { name: 'State Bank of Pakistan (SBP) Banking License', verified: true, fileUrl: '' },
-        { name: 'SECP Listed Corporation Certificate', verified: true, fileUrl: '' },
-        { name: 'FBR Tier-1 Tax Compliance Profile', verified: true, fileUrl: '' },
+        {
+          name: 'State Bank of Pakistan (SBP) Banking License',
+          verified: true,
+          fileUrl: '',
+        },
+        {
+          name: 'SECP Listed Corporation Certificate',
+          verified: true,
+          fileUrl: '',
+        },
+        {
+          name: 'FBR Tier-1 Tax Compliance Profile',
+          verified: true,
+          fileUrl: '',
+        },
       ],
     },
   },
@@ -989,7 +1144,8 @@ const DEFAULT_ENTERPRISES = [
       industry: 'Computer Science & IT',
       logo: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=120',
       website: 'https://www.techlogix.com',
-      description: 'Global technology company providing software development, cloud computing architectures, and digital enablement.',
+      description:
+        'Global technology company providing software development, cloud computing architectures, and digital enablement.',
       companySize: '200-500 Employees',
       tagline: 'Delivering High-Impact Digital Engineering',
       logoInitials: 'TGS',
@@ -1001,9 +1157,17 @@ const DEFAULT_ENTERPRISES = [
       submittedDate: 'Feb 01, 2026',
       rejectionReason: '',
       documents: [
-        { name: 'PSEB Registered IT Exporter Certificate', verified: true, fileUrl: '' },
+        {
+          name: 'PSEB Registered IT Exporter Certificate',
+          verified: true,
+          fileUrl: '',
+        },
         { name: 'FBR NTN Verified Profile', verified: true, fileUrl: '' },
-        { name: 'Corporate Banking Reference Letter', verified: true, fileUrl: '' },
+        {
+          name: 'Corporate Banking Reference Letter',
+          verified: true,
+          fileUrl: '',
+        },
       ],
     },
   },
@@ -1015,7 +1179,9 @@ const DEFAULT_ENTERPRISES = [
  * @access  Private (Admin / Super Admin)
  */
 export const getAllEmployersAdmin = asyncHandler(async (req, res) => {
-  let employers = await User.find({ role: 'employer' }).select('-password -refreshToken').lean();
+  let employers = await User.find({ role: 'employer' })
+    .select('-password -refreshToken')
+    .lean();
 
   // If no employers exist yet, bootstrap standard Pakistani enterprises
   if (!employers || employers.length === 0) {
@@ -1023,7 +1189,9 @@ export const getAllEmployersAdmin = asyncHandler(async (req, res) => {
       for (const ent of DEFAULT_ENTERPRISES) {
         await User.create(ent);
       }
-      employers = await User.find({ role: 'employer' }).select('-password -refreshToken').lean();
+      employers = await User.find({ role: 'employer' })
+        .select('-password -refreshToken')
+        .lean();
     } catch (seedErr) {
       console.warn('Employer bootstrap note:', seedErr.message);
     }
@@ -1040,7 +1208,11 @@ export const getAllEmployersAdmin = asyncHandler(async (req, res) => {
         totalJobs: { $sum: 1 },
         activeJobs: {
           $sum: {
-            $cond: [{ $in: ['$status', ['Open', 'Active', 'open', 'active']] }, 1, 0],
+            $cond: [
+              { $in: ['$status', ['Open', 'Active', 'open', 'active']] },
+              1,
+              0,
+            ],
           },
         },
       },
@@ -1055,14 +1227,24 @@ export const getAllEmployersAdmin = asyncHandler(async (req, res) => {
   const formattedEmployers = employers.map((emp) => {
     const cp = emp.companyProfile || {};
     const defaultDocList = [
-      { name: 'SECP Certificate of Incorporation', verified: cp.verificationStatus === 'verified' },
-      { name: 'FBR NTN Active Taxpayer Profile', verified: cp.verificationStatus === 'verified' },
-      { name: 'Corporate Domain Verification', verified: cp.verificationStatus === 'verified' },
+      {
+        name: 'SECP Certificate of Incorporation',
+        verified: cp.verificationStatus === 'verified',
+      },
+      {
+        name: 'FBR NTN Active Taxpayer Profile',
+        verified: cp.verificationStatus === 'verified',
+      },
+      {
+        name: 'Corporate Domain Verification',
+        verified: cp.verificationStatus === 'verified',
+      },
     ];
 
-    const activeJobs = jobCountMap[emp._id.toString()] !== undefined
-      ? jobCountMap[emp._id.toString()]
-      : (cp.activeJobsCount || (cp.verificationStatus === 'verified' ? 8 : 0));
+    const activeJobs =
+      jobCountMap[emp._id.toString()] !== undefined
+        ? jobCountMap[emp._id.toString()]
+        : cp.activeJobsCount || (cp.verificationStatus === 'verified' ? 8 : 0);
 
     return {
       id: emp._id.toString(),
@@ -1082,21 +1264,44 @@ export const getAllEmployersAdmin = asyncHandler(async (req, res) => {
       website: cp.website || 'https://www.systemsltd.com',
       headquarters: cp.headquarters || emp.location || 'Lahore, Punjab',
       activeJobsCount: activeJobs,
-      verificationStatus: cp.verificationStatus || (emp.status === 'banned' ? 'suspended' : 'verified'),
-      verifiedDate: cp.verifiedDate || (cp.verificationStatus === 'verified' ? 'Jan 10, 2026' : undefined),
-      submittedDate: cp.submittedDate || (emp.createdAt ? new Date(emp.createdAt).toLocaleDateString() : 'Recent'),
+      verificationStatus:
+        cp.verificationStatus ||
+        (emp.status === 'banned' ? 'suspended' : 'verified'),
+      verifiedDate:
+        cp.verifiedDate ||
+        (cp.verificationStatus === 'verified' ? 'Jan 10, 2026' : undefined),
+      submittedDate:
+        cp.submittedDate ||
+        (emp.createdAt
+          ? new Date(emp.createdAt).toLocaleDateString()
+          : 'Recent'),
       rejectionReason: cp.rejectionReason || '',
-      documents: Array.isArray(cp.documents) && cp.documents.length > 0 ? cp.documents : defaultDocList,
-      description: cp.description || emp.bio || 'Premier corporate organization operating in Pakistan.',
+      documents:
+        Array.isArray(cp.documents) && cp.documents.length > 0
+          ? cp.documents
+          : defaultDocList,
+      description:
+        cp.description ||
+        emp.bio ||
+        'Premier corporate organization operating in Pakistan.',
     };
   });
 
   // Calculate live global KPI metrics
   const totalCount = formattedEmployers.length;
-  const verifiedCount = formattedEmployers.filter((e) => e.verificationStatus === 'verified').length;
-  const pendingCount = formattedEmployers.filter((e) => e.verificationStatus === 'pending').length;
-  const suspendedCount = formattedEmployers.filter((e) => e.verificationStatus === 'suspended').length;
-  const totalActiveJobs = formattedEmployers.reduce((acc, curr) => acc + (curr.activeJobsCount || 0), 0);
+  const verifiedCount = formattedEmployers.filter(
+    (e) => e.verificationStatus === 'verified'
+  ).length;
+  const pendingCount = formattedEmployers.filter(
+    (e) => e.verificationStatus === 'pending'
+  ).length;
+  const suspendedCount = formattedEmployers.filter(
+    (e) => e.verificationStatus === 'suspended'
+  ).length;
+  const totalActiveJobs = formattedEmployers.reduce(
+    (acc, curr) => acc + (curr.activeJobsCount || 0),
+    0
+  );
 
   const kpis = {
     totalEmployers: totalCount,
@@ -1143,7 +1348,9 @@ export const getEmployerByIdAdmin = asyncHandler(async (req, res) => {
       {
         employer,
         jobs,
-        activeJobsCount: jobs.filter((j) => ['Open', 'Active', 'open', 'active'].includes(j.status)).length,
+        activeJobsCount: jobs.filter((j) =>
+          ['Open', 'Active', 'open', 'active'].includes(j.status)
+        ).length,
       },
       'Employer dossier retrieved successfully'
     )
@@ -1155,98 +1362,113 @@ export const getEmployerByIdAdmin = asyncHandler(async (req, res) => {
  * @desc    Approve (verify), pend, or suspend an employer corporate account
  * @access  Private (Admin / Super Admin)
  */
-export const updateEmployerVerificationAdmin = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { verificationStatus, rejectionReason = '' } = req.body;
+export const updateEmployerVerificationAdmin = asyncHandler(
+  async (req, res) => {
+    const { id } = req.params;
+    const { verificationStatus, rejectionReason = '' } = req.body;
 
-  if (!['verified', 'pending', 'suspended'].includes(verificationStatus)) {
-    throw new ApiError(400, 'Invalid verification status');
+    if (!['verified', 'pending', 'suspended'].includes(verificationStatus)) {
+      throw new ApiError(400, 'Invalid verification status');
+    }
+
+    const user = await User.findOne({ _id: id, role: 'employer' });
+    if (!user) {
+      throw new ApiError(404, 'Employer account not found');
+    }
+
+    const cp = user.companyProfile || {};
+    cp.verificationStatus = verificationStatus;
+    cp.rejectionReason =
+      verificationStatus === 'suspended' ? rejectionReason : '';
+    if (verificationStatus === 'verified') {
+      cp.verifiedDate = new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+
+    user.companyProfile = cp;
+    user.status = verificationStatus === 'suspended' ? 'banned' : 'active';
+    if (verificationStatus === 'suspended') {
+      user.banReason = rejectionReason || 'Corporate verification suspended';
+    } else {
+      user.banReason = '';
+    }
+
+    await user.save({ validateBeforeSave: false });
+
+    const updatedEmployer = await User.findById(id).select(
+      '-password -refreshToken'
+    );
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          updatedEmployer,
+          `Employer verification status updated to "${verificationStatus}" successfully`
+        )
+      );
   }
-
-  const user = await User.findOne({ _id: id, role: 'employer' });
-  if (!user) {
-    throw new ApiError(404, 'Employer account not found');
-  }
-
-  const cp = user.companyProfile || {};
-  cp.verificationStatus = verificationStatus;
-  cp.rejectionReason = verificationStatus === 'suspended' ? rejectionReason : '';
-  if (verificationStatus === 'verified') {
-    cp.verifiedDate = new Date().toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  }
-
-  user.companyProfile = cp;
-  user.status = verificationStatus === 'suspended' ? 'banned' : 'active';
-  if (verificationStatus === 'suspended') {
-    user.banReason = rejectionReason || 'Corporate verification suspended';
-  } else {
-    user.banReason = '';
-  }
-
-  await user.save({ validateBeforeSave: false });
-
-  const updatedEmployer = await User.findById(id).select('-password -refreshToken');
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      updatedEmployer,
-      `Employer verification status updated to "${verificationStatus}" successfully`
-    )
-  );
-});
+);
 
 /**
  * @route   POST /api/users/admin/employers/bulk-verification
  * @desc    Bulk verify or suspend multiple corporate employers
  * @access  Private (Admin / Super Admin)
  */
-export const bulkUpdateEmployerVerificationAdmin = asyncHandler(async (req, res) => {
-  const { ids, verificationStatus, rejectionReason = '' } = req.body;
+export const bulkUpdateEmployerVerificationAdmin = asyncHandler(
+  async (req, res) => {
+    const { ids, verificationStatus, rejectionReason = '' } = req.body;
 
-  if (!Array.isArray(ids) || ids.length === 0) {
-    throw new ApiError(400, 'Please provide an array of employer IDs');
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new ApiError(400, 'Please provide an array of employer IDs');
+    }
+
+    if (!['verified', 'pending', 'suspended'].includes(verificationStatus)) {
+      throw new ApiError(400, 'Invalid verification status');
+    }
+
+    const updateDoc = {
+      'companyProfile.verificationStatus': verificationStatus,
+      status: verificationStatus === 'suspended' ? 'banned' : 'active',
+    };
+
+    if (verificationStatus === 'verified') {
+      updateDoc['companyProfile.verifiedDate'] = new Date().toLocaleDateString(
+        'en-US',
+        {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }
+      );
+      updateDoc['companyProfile.rejectionReason'] = '';
+      updateDoc.banReason = '';
+    } else if (verificationStatus === 'suspended') {
+      updateDoc['companyProfile.rejectionReason'] =
+        rejectionReason || 'Batch compliance suspension';
+      updateDoc.banReason = rejectionReason || 'Batch compliance suspension';
+    }
+
+    const result = await User.updateMany(
+      { _id: { $in: ids }, role: 'employer' },
+      { $set: updateDoc }
+    );
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { modifiedCount: result.modifiedCount },
+          `Successfully updated ${result.modifiedCount} employers to status "${verificationStatus}"`
+        )
+      );
   }
-
-  if (!['verified', 'pending', 'suspended'].includes(verificationStatus)) {
-    throw new ApiError(400, 'Invalid verification status');
-  }
-
-  const updateDoc = {
-    'companyProfile.verificationStatus': verificationStatus,
-    status: verificationStatus === 'suspended' ? 'banned' : 'active',
-  };
-
-  if (verificationStatus === 'verified') {
-    updateDoc['companyProfile.verifiedDate'] = new Date().toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-    updateDoc['companyProfile.rejectionReason'] = '';
-    updateDoc.banReason = '';
-  } else if (verificationStatus === 'suspended') {
-    updateDoc['companyProfile.rejectionReason'] = rejectionReason || 'Batch compliance suspension';
-    updateDoc.banReason = rejectionReason || 'Batch compliance suspension';
-  }
-
-  const result = await User.updateMany(
-    { _id: { $in: ids }, role: 'employer' },
-    { $set: updateDoc }
-  );
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { modifiedCount: result.modifiedCount },
-      `Successfully updated ${result.modifiedCount} employers to status "${verificationStatus}"`
-    )
-  );
-});
+);
 
 /**
  * @route   DELETE /api/users/admin/employers/:id
@@ -1266,9 +1488,15 @@ export const deleteEmployerAdmin = asyncHandler(async (req, res) => {
     Job.deleteMany({ employer: id }),
   ]);
 
-  return res.status(200).json(
-    new ApiResponse(200, {}, 'Employer corporate account and all posted vacancies permanently deleted')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        'Employer corporate account and all posted vacancies permanently deleted'
+      )
+    );
 });
 
 /**
@@ -1293,15 +1521,34 @@ export const getAdminDashboardStats = asyncHandler(async (req, res) => {
     closedJobsCount,
     totalApplications,
   ] = await Promise.all([
-    User.countDocuments({ role: { $in: ['student', 'fresh_graduate', 'experienced', 'professional', 'candidate'] } }),
+    User.countDocuments({
+      role: {
+        $in: [
+          'student',
+          'fresh_graduate',
+          'experienced',
+          'professional',
+          'candidate',
+        ],
+      },
+    }),
     User.countDocuments({ role: 'student' }),
     User.countDocuments({ role: { $in: ['fresh_graduate', 'graduate'] } }),
     User.countDocuments({ role: { $in: ['professional', 'experienced'] } }),
     User.countDocuments({ role: 'employer' }),
-    User.countDocuments({ role: 'employer', 'companyProfile.verificationStatus': 'verified' }),
-    User.countDocuments({ role: 'employer', 'companyProfile.verificationStatus': 'pending' }),
+    User.countDocuments({
+      role: 'employer',
+      'companyProfile.verificationStatus': 'verified',
+    }),
+    User.countDocuments({
+      role: 'employer',
+      'companyProfile.verificationStatus': 'pending',
+    }),
     Job.countDocuments({}),
-    Job.countDocuments({ status: { $in: ['Open', 'Active', 'open', 'active'] }, moderationStatus: { $ne: 'blocked' } }),
+    Job.countDocuments({
+      status: { $in: ['Open', 'Active', 'open', 'active'] },
+      moderationStatus: { $ne: 'blocked' },
+    }),
     Job.countDocuments({ moderationStatus: { $in: ['flagged', 'blocked'] } }),
     Job.countDocuments({ status: 'Closed' }),
     Application.countDocuments({}),
@@ -1311,7 +1558,15 @@ export const getAdminDashboardStats = asyncHandler(async (req, res) => {
   const disciplineAgg = await User.aggregate([
     {
       $match: {
-        role: { $in: ['student', 'fresh_graduate', 'experienced', 'professional', 'candidate'] },
+        role: {
+          $in: [
+            'student',
+            'fresh_graduate',
+            'experienced',
+            'professional',
+            'candidate',
+          ],
+        },
       },
     },
     {
@@ -1331,13 +1586,29 @@ export const getAdminDashboardStats = asyncHandler(async (req, res) => {
 
   disciplineAgg.forEach((d) => {
     const dept = (d._id || '').toLowerCase();
-    if (dept.includes('computer') || dept.includes('it') || dept.includes('software')) {
+    if (
+      dept.includes('computer') ||
+      dept.includes('it') ||
+      dept.includes('software')
+    ) {
       discMap['Computer Science & IT'] += d.count;
-    } else if (dept.includes('medical') || dept.includes('health') || dept.includes('hospital')) {
+    } else if (
+      dept.includes('medical') ||
+      dept.includes('health') ||
+      dept.includes('hospital')
+    ) {
       discMap['Medical & Healthcare'] += d.count;
-    } else if (dept.includes('engineering') || dept.includes('civil') || dept.includes('structural')) {
+    } else if (
+      dept.includes('engineering') ||
+      dept.includes('civil') ||
+      dept.includes('structural')
+    ) {
       discMap['Engineering & Construction'] += d.count;
-    } else if (dept.includes('business') || dept.includes('finance') || dept.includes('bank')) {
+    } else if (
+      dept.includes('business') ||
+      dept.includes('finance') ||
+      dept.includes('bank')
+    ) {
       discMap['Business & Finance'] += d.count;
     } else {
       discMap['Computer Science & IT'] += d.count;
@@ -1414,24 +1685,150 @@ export const getAdminDashboardStats = asyncHandler(async (req, res) => {
  * Initial standard skills taxonomy seed dataset if collection is empty
  */
 const DEFAULT_SKILLS_SEED = [
-  { name: 'Python', category: 'Computer Science & IT', aliases: ['py', 'python3'], popularity: 98, weightMultiplier: 1.0, demandLevel: 'High' },
-  { name: 'React.js', category: 'Computer Science & IT', aliases: ['react', 'reactjs'], popularity: 95, weightMultiplier: 1.0, demandLevel: 'High' },
-  { name: 'Node.js', category: 'Computer Science & IT', aliases: ['nodejs', 'express'], popularity: 91, weightMultiplier: 1.0, demandLevel: 'High' },
-  { name: 'FastAPI', category: 'Computer Science & IT', aliases: ['fastapi', 'python-api'], popularity: 86, weightMultiplier: 1.1, demandLevel: 'High' },
-  { name: 'Docker', category: 'Computer Science & IT', aliases: ['containerization', 'docker-compose'], popularity: 89, weightMultiplier: 1.1, demandLevel: 'High' },
-  { name: 'Next.js', category: 'Computer Science & IT', aliases: ['nextjs', 'ssr-react'], popularity: 88, weightMultiplier: 1.1, demandLevel: 'High' },
-  { name: 'Flutter', category: 'Computer Science & IT', aliases: ['dart', 'flutter-mobile'], popularity: 82, weightMultiplier: 1.0, demandLevel: 'Medium' },
-  { name: 'Kubernetes', category: 'Computer Science & IT', aliases: ['k8s', 'cloud-orchestration'], popularity: 78, weightMultiplier: 1.2, demandLevel: 'High' },
-  { name: 'PyTorch', category: 'Emerging AI & Data', aliases: ['torch', 'deep-learning'], popularity: 94, weightMultiplier: 1.2, demandLevel: 'High' },
-  { name: 'Vector Embeddings', category: 'Emerging AI & Data', aliases: ['chroma', 'pinecone', 'pgvector'], popularity: 92, weightMultiplier: 1.3, demandLevel: 'High' },
-  { name: 'Hugging Face Transformers', category: 'Emerging AI & Data', aliases: ['huggingface', 'bert', 'llm'], popularity: 90, weightMultiplier: 1.3, demandLevel: 'High' },
-  { name: 'LangChain & RAG', category: 'Emerging AI & Data', aliases: ['rag', 'retrieval-augmented'], popularity: 89, weightMultiplier: 1.25, demandLevel: 'High' },
-  { name: 'Emergency Triage', category: 'Medical & Healthcare', aliases: ['triage', 'er-assessment'], popularity: 93, weightMultiplier: 1.0, demandLevel: 'High' },
-  { name: 'Critical Care (ICU)', category: 'Medical & Healthcare', aliases: ['icu', 'ventilator-management'], popularity: 91, weightMultiplier: 1.15, demandLevel: 'High' },
-  { name: 'ETABS Modeling', category: 'Engineering & Construction', aliases: ['etabs', 'frame-analysis'], popularity: 95, weightMultiplier: 1.1, demandLevel: 'High' },
-  { name: 'AutoCAD Civil 3D', category: 'Engineering & Construction', aliases: ['autocad', 'civil3d'], popularity: 92, weightMultiplier: 1.05, demandLevel: 'High' },
-  { name: 'Financial Modeling & DCF', category: 'Business & Finance', aliases: ['dcf', 'valuation'], popularity: 95, weightMultiplier: 1.1, demandLevel: 'High' },
-  { name: 'IFRS Compliance', category: 'Business & Finance', aliases: ['ifrs', 'gaap-audit'], popularity: 90, weightMultiplier: 1.15, demandLevel: 'High' },
+  {
+    name: 'Python',
+    category: 'Computer Science & IT',
+    aliases: ['py', 'python3'],
+    popularity: 98,
+    weightMultiplier: 1.0,
+    demandLevel: 'High',
+  },
+  {
+    name: 'React.js',
+    category: 'Computer Science & IT',
+    aliases: ['react', 'reactjs'],
+    popularity: 95,
+    weightMultiplier: 1.0,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Node.js',
+    category: 'Computer Science & IT',
+    aliases: ['nodejs', 'express'],
+    popularity: 91,
+    weightMultiplier: 1.0,
+    demandLevel: 'High',
+  },
+  {
+    name: 'FastAPI',
+    category: 'Computer Science & IT',
+    aliases: ['fastapi', 'python-api'],
+    popularity: 86,
+    weightMultiplier: 1.1,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Docker',
+    category: 'Computer Science & IT',
+    aliases: ['containerization', 'docker-compose'],
+    popularity: 89,
+    weightMultiplier: 1.1,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Next.js',
+    category: 'Computer Science & IT',
+    aliases: ['nextjs', 'ssr-react'],
+    popularity: 88,
+    weightMultiplier: 1.1,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Flutter',
+    category: 'Computer Science & IT',
+    aliases: ['dart', 'flutter-mobile'],
+    popularity: 82,
+    weightMultiplier: 1.0,
+    demandLevel: 'Medium',
+  },
+  {
+    name: 'Kubernetes',
+    category: 'Computer Science & IT',
+    aliases: ['k8s', 'cloud-orchestration'],
+    popularity: 78,
+    weightMultiplier: 1.2,
+    demandLevel: 'High',
+  },
+  {
+    name: 'PyTorch',
+    category: 'Emerging AI & Data',
+    aliases: ['torch', 'deep-learning'],
+    popularity: 94,
+    weightMultiplier: 1.2,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Vector Embeddings',
+    category: 'Emerging AI & Data',
+    aliases: ['chroma', 'pinecone', 'pgvector'],
+    popularity: 92,
+    weightMultiplier: 1.3,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Hugging Face Transformers',
+    category: 'Emerging AI & Data',
+    aliases: ['huggingface', 'bert', 'llm'],
+    popularity: 90,
+    weightMultiplier: 1.3,
+    demandLevel: 'High',
+  },
+  {
+    name: 'LangChain & RAG',
+    category: 'Emerging AI & Data',
+    aliases: ['rag', 'retrieval-augmented'],
+    popularity: 89,
+    weightMultiplier: 1.25,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Emergency Triage',
+    category: 'Medical & Healthcare',
+    aliases: ['triage', 'er-assessment'],
+    popularity: 93,
+    weightMultiplier: 1.0,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Critical Care (ICU)',
+    category: 'Medical & Healthcare',
+    aliases: ['icu', 'ventilator-management'],
+    popularity: 91,
+    weightMultiplier: 1.15,
+    demandLevel: 'High',
+  },
+  {
+    name: 'ETABS Modeling',
+    category: 'Engineering & Construction',
+    aliases: ['etabs', 'frame-analysis'],
+    popularity: 95,
+    weightMultiplier: 1.1,
+    demandLevel: 'High',
+  },
+  {
+    name: 'AutoCAD Civil 3D',
+    category: 'Engineering & Construction',
+    aliases: ['autocad', 'civil3d'],
+    popularity: 92,
+    weightMultiplier: 1.05,
+    demandLevel: 'High',
+  },
+  {
+    name: 'Financial Modeling & DCF',
+    category: 'Business & Finance',
+    aliases: ['dcf', 'valuation'],
+    popularity: 95,
+    weightMultiplier: 1.1,
+    demandLevel: 'High',
+  },
+  {
+    name: 'IFRS Compliance',
+    category: 'Business & Finance',
+    aliases: ['ifrs', 'gaap-audit'],
+    popularity: 90,
+    weightMultiplier: 1.15,
+    demandLevel: 'High',
+  },
 ];
 
 /**
@@ -1525,7 +1922,10 @@ export const updateAdminAiSettings = asyncHandler(async (req, res) => {
 
   const total = sW + exW + edW;
   if (total !== 100) {
-    throw new ApiError(400, `Weights sum must equal exactly 100%. Current sum: ${total}%`);
+    throw new ApiError(
+      400,
+      `Weights sum must equal exactly 100%. Current sum: ${total}%`
+    );
   }
 
   const updateDoc = {
@@ -1541,11 +1941,21 @@ export const updateAdminAiSettings = asyncHandler(async (req, res) => {
   if (activePresetName) updateDoc.activePresetName = activePresetName;
   if (calibrationVersion) updateDoc.calibrationVersion = calibrationVersion;
 
-  const updatedSettings = await AiSetting.findOneAndUpdate({}, { $set: updateDoc }, { new: true, upsert: true });
-
-  return res.status(200).json(
-    new ApiResponse(200, updatedSettings, 'AI Algorithm weights updated and re-calibrated successfully')
+  const updatedSettings = await AiSetting.findOneAndUpdate(
+    {},
+    { $set: updateDoc },
+    { new: true, upsert: true }
   );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedSettings,
+        'AI Algorithm weights updated and re-calibrated successfully'
+      )
+    );
 });
 
 /**
@@ -1563,11 +1973,21 @@ export const resetAdminAiSettings = asyncHandler(async (req, res) => {
     lastCalibrated: `Reset Baseline (${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`,
   };
 
-  const defaultSettings = await AiSetting.findOneAndUpdate({}, { $set: resetDoc }, { new: true, upsert: true });
-
-  return res.status(200).json(
-    new ApiResponse(200, defaultSettings, 'Algorithm weights restored to official FYP Proposal Standard (50 / 30 / 20)')
+  const defaultSettings = await AiSetting.findOneAndUpdate(
+    {},
+    { $set: resetDoc },
+    { new: true, upsert: true }
   );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        defaultSettings,
+        'Algorithm weights restored to official FYP Proposal Standard (50 / 30 / 20)'
+      )
+    );
 });
 
 /**
@@ -1588,9 +2008,11 @@ export const getAllSkillsAdmin = asyncHandler(async (req, res) => {
     demandLevel: s.demandLevel || 'High',
   }));
 
-  return res.status(200).json(
-    new ApiResponse(200, formatted, 'Skills taxonomy retrieved successfully')
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, formatted, 'Skills taxonomy retrieved successfully')
+    );
 });
 
 /**
@@ -1599,7 +2021,8 @@ export const getAllSkillsAdmin = asyncHandler(async (req, res) => {
  * @access  Private (Admin / Super Admin)
  */
 export const createSkillAdmin = asyncHandler(async (req, res) => {
-  const { name, category, aliases, weightMultiplier, demandLevel, popularity } = req.body;
+  const { name, category, aliases, weightMultiplier, demandLevel, popularity } =
+    req.body;
 
   if (!name || !name.trim()) {
     throw new ApiError(400, 'Skill name is required');
@@ -1608,7 +2031,10 @@ export const createSkillAdmin = asyncHandler(async (req, res) => {
   const cleanName = name.trim();
   const existing = await Skill.findOne({ name: cleanName.toLowerCase() });
   if (existing) {
-    throw new ApiError(409, `Skill "${cleanName}" already exists in the taxonomy`);
+    throw new ApiError(
+      409,
+      `Skill "${cleanName}" already exists in the taxonomy`
+    );
   }
 
   let parsedAliases = [];
@@ -1658,9 +2084,15 @@ export const deleteSkillAdmin = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Skill not found in taxonomy');
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, { id: deleted._id }, `Skill "${deleted.name}" removed from taxonomy`)
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { id: deleted._id },
+        `Skill "${deleted.name}" removed from taxonomy`
+      )
+    );
 });
 
 /**
@@ -1670,7 +2102,8 @@ const DEFAULT_AUDIT_LOG_SEED = [
   {
     action: 'AI Algorithm Weights Calibrated',
     category: 'System Config',
-    detail: 'Algorithm weights re-balanced: Skill (50%), Experience (30%), Education (20%)',
+    detail:
+      'Algorithm weights re-balanced: Skill (50%), Experience (30%), Education (20%)',
     type: 'info',
     severity: 'info',
     actor: 'System Administrator (Super Admin)',
@@ -1696,7 +2129,8 @@ const DEFAULT_AUDIT_LOG_SEED = [
   {
     action: 'Fraudulent Vacancy Blocked',
     category: 'Job Moderation',
-    detail: 'Detected & blocked suspicious vacancy "Data Typing Home Job" with 88% scam risk score',
+    detail:
+      'Detected & blocked suspicious vacancy "Data Typing Home Job" with 88% scam risk score',
     type: 'danger',
     severity: 'danger',
     actor: 'Security Sentinel AI',
@@ -1709,7 +2143,8 @@ const DEFAULT_AUDIT_LOG_SEED = [
   {
     action: 'Candidate Status Re-evaluated',
     category: 'User Moderation',
-    detail: 'NLP Resume evaluation completed for Syed Hamza Ali (BSCS Arid University) with 94% match score',
+    detail:
+      'NLP Resume evaluation completed for Syed Hamza Ali (BSCS Arid University) with 94% match score',
     type: 'success',
     severity: 'success',
     actor: 'System Administrator (Super Admin)',
@@ -1730,11 +2165,13 @@ const DEFAULT_SECURITY_ALERTS_SEED = [
     category: 'Auth Gateway Threat',
     severity: 'Critical',
     score: 94,
-    description: 'Over 45 failed login attempts within 60 seconds targeting recruiter corporate endpoints.',
+    description:
+      'Over 45 failed login attempts within 60 seconds targeting recruiter corporate endpoints.',
     target: '/api/auth/login',
     ipAddress: '185.220.101.5',
     location: 'Frankfurt, DE (Tor Exit Node)',
-    recommendedAction: 'Immediate IP subnet ban & enforce mandatory captcha on /api/auth endpoints.',
+    recommendedAction:
+      'Immediate IP subnet ban & enforce mandatory captcha on /api/auth endpoints.',
     status: 'Active Threat',
     detectedAt: '12 mins ago',
   },
@@ -1743,11 +2180,13 @@ const DEFAULT_SECURITY_ALERTS_SEED = [
     category: 'Job Compliance Sentinel',
     severity: 'High',
     score: 82,
-    description: 'Employer account attempting to post unverified external WhatsApp fee links.',
+    description:
+      'Employer account attempting to post unverified external WhatsApp fee links.',
     target: '/api/jobs (Post Job)',
     ipAddress: '182.180.45.19',
     location: 'Lahore, PK',
-    recommendedAction: 'Revoke employer posting rights and mandate SECP document verification.',
+    recommendedAction:
+      'Revoke employer posting rights and mandate SECP document verification.',
     status: 'Active Threat',
     detectedAt: '45 mins ago',
   },
@@ -1756,11 +2195,13 @@ const DEFAULT_SECURITY_ALERTS_SEED = [
     category: 'Account Takeover Prevention',
     severity: 'Medium',
     score: 65,
-    description: 'Admin account logged in from IP location shifting 800km within 5 minutes.',
+    description:
+      'Admin account logged in from IP location shifting 800km within 5 minutes.',
     target: 'Admin Session (JWT)',
     ipAddress: '119.160.118.4',
     location: 'Karachi, PK',
-    recommendedAction: 'Verify active token signature and notify primary admin email.',
+    recommendedAction:
+      'Verify active token signature and notify primary admin email.',
     status: 'Mitigated / Resolved',
     detectedAt: '2 hours ago',
     resolvedAt: '1 hour ago',
@@ -1855,7 +2296,12 @@ export const getAdminAuditAndSecurityLogs = asyncHandler(async (req, res) => {
     action: a.action,
     category: a.category,
     detail: a.detail,
-    timestamp: a.createdAt ? new Date(a.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'Recently',
+    timestamp: a.createdAt
+      ? new Date(a.createdAt).toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })
+      : 'Recently',
     type: a.type || 'info',
     severity: a.severity || 'info',
     actor: a.actor || 'System Administrator',
@@ -1890,7 +2336,12 @@ export const getAdminAuditAndSecurityLogs = asyncHandler(async (req, res) => {
     user: l.user,
     email: l.email,
     role: l.role,
-    timestamp: l.createdAt ? new Date(l.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'Recently',
+    timestamp: l.createdAt
+      ? new Date(l.createdAt).toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })
+      : 'Recently',
     ipAddress: l.ipAddress,
     device: l.device,
     location: l.location,
@@ -1899,9 +2350,13 @@ export const getAdminAuditAndSecurityLogs = asyncHandler(async (req, res) => {
   }));
 
   const totalLogs = auditLog.length;
-  const activeAlerts = securityAlerts.filter((a) => a.status.toLowerCase().includes('active')).length;
+  const activeAlerts = securityAlerts.filter((a) =>
+    a.status.toLowerCase().includes('active')
+  ).length;
   const totalLogins = loginHistory.length;
-  const failedLogins = loginHistory.filter((l) => l.status.toLowerCase().includes('failed')).length;
+  const failedLogins = loginHistory.filter((l) =>
+    l.status.toLowerCase().includes('failed')
+  ).length;
 
   return res.status(200).json(
     new ApiResponse(
@@ -1930,7 +2385,8 @@ export const getAdminAuditAndSecurityLogs = asyncHandler(async (req, res) => {
  */
 export const resolveSecurityAlertAdmin = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { resolutionNote = 'Mitigation applied at WAF & Gateway layer' } = req.body;
+  const { resolutionNote = 'Mitigation applied at WAF & Gateway layer' } =
+    req.body;
 
   const alert = await SecurityAlert.findById(id);
   if (!alert) {
@@ -1957,9 +2413,15 @@ export const resolveSecurityAlertAdmin = asyncHandler(async (req, res) => {
     status: 'Mitigated',
   });
 
-  return res.status(200).json(
-    new ApiResponse(200, alert, `Security threat "${alert.title}" successfully marked as mitigated`)
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        alert,
+        `Security threat "${alert.title}" successfully marked as mitigated`
+      )
+    );
 });
 
 /**
@@ -2001,10 +2463,13 @@ export const blockIpAddressAdmin = asyncHandler(async (req, res) => {
     status: 'Quarantined',
   });
 
-  return res.status(200).json(
-    new ApiResponse(200, { ipAddress, status: 'Quarantined' }, `IP Address ${ipAddress} successfully blocked and quarantined`)
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { ipAddress, status: 'Quarantined' },
+        `IP Address ${ipAddress} successfully blocked and quarantined`
+      )
+    );
 });
-
-
-
