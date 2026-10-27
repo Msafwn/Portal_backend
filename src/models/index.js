@@ -6,6 +6,7 @@ import SavedJob from './SavedJob.js';
 import Notification from './Notification.js';
 import InterviewSession from './InterviewSession.js';
 import ChatSession from './ChatSession.js';
+import AiSetting from './AiSetting.js';
 
 export {
   User,
@@ -16,6 +17,7 @@ export {
   Notification,
   InterviewSession,
   ChatSession,
+  AiSetting,
 };
 
 export default {
@@ -27,6 +29,7 @@ export default {
   Notification,
   InterviewSession,
   ChatSession,
+  AiSetting,
 };
 
 

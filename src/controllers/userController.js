@@ -1,6 +1,8 @@
 import User from '../models/User.js';
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
+import Skill from '../models/Skill.js';
+import AiSetting from '../models/AiSetting.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -1404,4 +1406,258 @@ export const getAdminDashboardStats = asyncHandler(async (req, res) => {
     )
   );
 });
+
+/**
+ * Initial standard skills taxonomy seed dataset if collection is empty
+ */
+const DEFAULT_SKILLS_SEED = [
+  { name: 'Python', category: 'Computer Science & IT', aliases: ['py', 'python3'], popularity: 98, weightMultiplier: 1.0, demandLevel: 'High' },
+  { name: 'React.js', category: 'Computer Science & IT', aliases: ['react', 'reactjs'], popularity: 95, weightMultiplier: 1.0, demandLevel: 'High' },
+  { name: 'Node.js', category: 'Computer Science & IT', aliases: ['nodejs', 'express'], popularity: 91, weightMultiplier: 1.0, demandLevel: 'High' },
+  { name: 'FastAPI', category: 'Computer Science & IT', aliases: ['fastapi', 'python-api'], popularity: 86, weightMultiplier: 1.1, demandLevel: 'High' },
+  { name: 'Docker', category: 'Computer Science & IT', aliases: ['containerization', 'docker-compose'], popularity: 89, weightMultiplier: 1.1, demandLevel: 'High' },
+  { name: 'Next.js', category: 'Computer Science & IT', aliases: ['nextjs', 'ssr-react'], popularity: 88, weightMultiplier: 1.1, demandLevel: 'High' },
+  { name: 'Flutter', category: 'Computer Science & IT', aliases: ['dart', 'flutter-mobile'], popularity: 82, weightMultiplier: 1.0, demandLevel: 'Medium' },
+  { name: 'Kubernetes', category: 'Computer Science & IT', aliases: ['k8s', 'cloud-orchestration'], popularity: 78, weightMultiplier: 1.2, demandLevel: 'High' },
+  { name: 'PyTorch', category: 'Emerging AI & Data', aliases: ['torch', 'deep-learning'], popularity: 94, weightMultiplier: 1.2, demandLevel: 'High' },
+  { name: 'Vector Embeddings', category: 'Emerging AI & Data', aliases: ['chroma', 'pinecone', 'pgvector'], popularity: 92, weightMultiplier: 1.3, demandLevel: 'High' },
+  { name: 'Hugging Face Transformers', category: 'Emerging AI & Data', aliases: ['huggingface', 'bert', 'llm'], popularity: 90, weightMultiplier: 1.3, demandLevel: 'High' },
+  { name: 'LangChain & RAG', category: 'Emerging AI & Data', aliases: ['rag', 'retrieval-augmented'], popularity: 89, weightMultiplier: 1.25, demandLevel: 'High' },
+  { name: 'Emergency Triage', category: 'Medical & Healthcare', aliases: ['triage', 'er-assessment'], popularity: 93, weightMultiplier: 1.0, demandLevel: 'High' },
+  { name: 'Critical Care (ICU)', category: 'Medical & Healthcare', aliases: ['icu', 'ventilator-management'], popularity: 91, weightMultiplier: 1.15, demandLevel: 'High' },
+  { name: 'ETABS Modeling', category: 'Engineering & Construction', aliases: ['etabs', 'frame-analysis'], popularity: 95, weightMultiplier: 1.1, demandLevel: 'High' },
+  { name: 'AutoCAD Civil 3D', category: 'Engineering & Construction', aliases: ['autocad', 'civil3d'], popularity: 92, weightMultiplier: 1.05, demandLevel: 'High' },
+  { name: 'Financial Modeling & DCF', category: 'Business & Finance', aliases: ['dcf', 'valuation'], popularity: 95, weightMultiplier: 1.1, demandLevel: 'High' },
+  { name: 'IFRS Compliance', category: 'Business & Finance', aliases: ['ifrs', 'gaap-audit'], popularity: 90, weightMultiplier: 1.15, demandLevel: 'High' },
+];
+
+/**
+ * @route   GET /api/users/admin/ai-settings
+ * @desc    Fetch current AI matching algorithm formulation weights and skills taxonomy
+ * @access  Private (Admin / Super Admin)
+ */
+export const getAdminAiSettings = asyncHandler(async (req, res) => {
+  let settings = await AiSetting.findOne();
+  if (!settings) {
+    settings = await AiSetting.create({
+      skillWeight: 50,
+      experienceWeight: 30,
+      educationWeight: 20,
+      minMatchThreshold: 45,
+      vectorEmbeddingModel: 'all-MiniLM-L6-v2 (384-dimensional dense vectors)',
+      similarityMetric: 'Normalized Cosine Similarity + TF-IDF Keyword Hybrid',
+      calibrationVersion: 'v2.4-Production-Arid-FYP',
+      activePresetName: 'Official FYP Proposal Standard (50 / 30 / 20)',
+      lastCalibrated: 'Apr 05, 2026 • 22:30 PKT',
+    });
+  }
+
+  // Ensure skills exist in DB
+  const skillsCount = await Skill.countDocuments();
+  if (skillsCount === 0) {
+    try {
+      await Skill.insertMany(DEFAULT_SKILLS_SEED, { ordered: false });
+    } catch {
+      // ignore duplicate key errors on seed
+    }
+  }
+
+  const rawSkills = await Skill.find().sort({ popularity: -1, createdAt: -1 });
+  const skillsTaxonomy = rawSkills.map((s) => ({
+    id: s._id.toString(),
+    _id: s._id,
+    name: s.name,
+    category: s.category,
+    aliases: s.aliases || [],
+    popularity: s.popularity || 85,
+    weightMultiplier: s.weightMultiplier || 1.0,
+    demandLevel: s.demandLevel || 'High',
+  }));
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        aiSettings: {
+          skillWeight: settings.skillWeight,
+          experienceWeight: settings.experienceWeight,
+          educationWeight: settings.educationWeight,
+          minMatchThreshold: settings.minMatchThreshold,
+          vectorEmbeddingModel: settings.vectorEmbeddingModel,
+          similarityMetric: settings.similarityMetric,
+          calibrationVersion: settings.calibrationVersion,
+          activePresetName: settings.activePresetName,
+          lastCalibrated: settings.lastCalibrated,
+        },
+        skillsTaxonomy,
+        skillsCount: skillsTaxonomy.length,
+      },
+      'AI algorithm configuration and skills taxonomy retrieved successfully'
+    )
+  );
+});
+
+/**
+ * @route   PUT /api/users/admin/ai-settings
+ * @desc    Update AI Matching Algorithm weights & threshold (Calibration)
+ * @access  Private (Admin / Super Admin)
+ */
+export const updateAdminAiSettings = asyncHandler(async (req, res) => {
+  const {
+    skillWeight,
+    experienceWeight,
+    educationWeight,
+    minMatchThreshold,
+    activePresetName,
+    calibrationVersion,
+  } = req.body;
+
+  const sW = Number(skillWeight);
+  const exW = Number(experienceWeight);
+  const edW = Number(educationWeight);
+
+  if (isNaN(sW) || isNaN(exW) || isNaN(edW)) {
+    throw new ApiError(400, 'Weights must be valid numerical percentages');
+  }
+
+  const total = sW + exW + edW;
+  if (total !== 100) {
+    throw new ApiError(400, `Weights sum must equal exactly 100%. Current sum: ${total}%`);
+  }
+
+  const updateDoc = {
+    skillWeight: sW,
+    experienceWeight: exW,
+    educationWeight: edW,
+    lastCalibrated: `Live Calibration (${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })})`,
+  };
+
+  if (minMatchThreshold !== undefined && !isNaN(Number(minMatchThreshold))) {
+    updateDoc.minMatchThreshold = Number(minMatchThreshold);
+  }
+  if (activePresetName) updateDoc.activePresetName = activePresetName;
+  if (calibrationVersion) updateDoc.calibrationVersion = calibrationVersion;
+
+  const updatedSettings = await AiSetting.findOneAndUpdate({}, { $set: updateDoc }, { new: true, upsert: true });
+
+  return res.status(200).json(
+    new ApiResponse(200, updatedSettings, 'AI Algorithm weights updated and re-calibrated successfully')
+  );
+});
+
+/**
+ * @route   POST /api/users/admin/ai-settings/reset
+ * @desc    Reset AI Matching weights to official FYP Proposal Standard (50 / 30 / 20)
+ * @access  Private (Admin / Super Admin)
+ */
+export const resetAdminAiSettings = asyncHandler(async (req, res) => {
+  const resetDoc = {
+    skillWeight: 50,
+    experienceWeight: 30,
+    educationWeight: 20,
+    minMatchThreshold: 45,
+    activePresetName: 'Official FYP Proposal Standard (50 / 30 / 20)',
+    lastCalibrated: `Reset Baseline (${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`,
+  };
+
+  const defaultSettings = await AiSetting.findOneAndUpdate({}, { $set: resetDoc }, { new: true, upsert: true });
+
+  return res.status(200).json(
+    new ApiResponse(200, defaultSettings, 'Algorithm weights restored to official FYP Proposal Standard (50 / 30 / 20)')
+  );
+});
+
+/**
+ * @route   GET /api/users/admin/skills
+ * @desc    Get all skills from taxonomy
+ * @access  Private (Admin / Super Admin)
+ */
+export const getAllSkillsAdmin = asyncHandler(async (req, res) => {
+  const skills = await Skill.find().sort({ popularity: -1, createdAt: -1 });
+  const formatted = skills.map((s) => ({
+    id: s._id.toString(),
+    _id: s._id,
+    name: s.name,
+    category: s.category,
+    aliases: s.aliases || [],
+    popularity: s.popularity || 85,
+    weightMultiplier: s.weightMultiplier || 1.0,
+    demandLevel: s.demandLevel || 'High',
+  }));
+
+  return res.status(200).json(
+    new ApiResponse(200, formatted, 'Skills taxonomy retrieved successfully')
+  );
+});
+
+/**
+ * @route   POST /api/users/admin/skills
+ * @desc    Add new skill to taxonomy
+ * @access  Private (Admin / Super Admin)
+ */
+export const createSkillAdmin = asyncHandler(async (req, res) => {
+  const { name, category, aliases, weightMultiplier, demandLevel, popularity } = req.body;
+
+  if (!name || !name.trim()) {
+    throw new ApiError(400, 'Skill name is required');
+  }
+
+  const cleanName = name.trim();
+  const existing = await Skill.findOne({ name: cleanName.toLowerCase() });
+  if (existing) {
+    throw new ApiError(409, `Skill "${cleanName}" already exists in the taxonomy`);
+  }
+
+  let parsedAliases = [];
+  if (Array.isArray(aliases)) {
+    parsedAliases = aliases.map((a) => a.trim().toLowerCase());
+  } else if (typeof aliases === 'string' && aliases.trim()) {
+    parsedAliases = aliases.split(',').map((a) => a.trim().toLowerCase());
+  }
+
+  const createdSkill = await Skill.create({
+    name: cleanName,
+    category: category || 'Computer Science & IT',
+    aliases: parsedAliases,
+    weightMultiplier: parseFloat(weightMultiplier) || 1.0,
+    demandLevel: demandLevel || 'High',
+    popularity: parseInt(popularity, 10) || 85,
+  });
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      {
+        id: createdSkill._id.toString(),
+        _id: createdSkill._id,
+        name: createdSkill.name,
+        category: createdSkill.category,
+        aliases: createdSkill.aliases,
+        weightMultiplier: createdSkill.weightMultiplier,
+        demandLevel: createdSkill.demandLevel,
+        popularity: createdSkill.popularity,
+      },
+      `Skill "${createdSkill.name}" registered into AI vectorizer successfully`
+    )
+  );
+});
+
+/**
+ * @route   DELETE /api/users/admin/skills/:id
+ * @desc    Delete skill from taxonomy
+ * @access  Private (Admin / Super Admin)
+ */
+export const deleteSkillAdmin = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const deleted = await Skill.findByIdAndDelete(id);
+  if (!deleted) {
+    throw new ApiError(404, 'Skill not found in taxonomy');
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, { id: deleted._id }, `Skill "${deleted.name}" removed from taxonomy`)
+  );
+});
+
 

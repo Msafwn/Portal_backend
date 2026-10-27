@@ -12,24 +12,7 @@ const skillSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Skill category is required'],
-      enum: [
-        'Frontend',
-        'Backend',
-        'Database',
-        'Mobile Development',
-        'DevOps & Cloud',
-        'Data Science & AI',
-        'Quality Assurance',
-        'UI/UX Design',
-        'Medical & Healthcare',
-        'Engineering & Construction',
-        'Business & Finance',
-        'Marketing & Sales',
-        'Education & Academia',
-        'Soft Skills & Management',
-        'Other',
-      ],
-      default: 'Other',
+      default: 'Computer Science & IT',
     },
     aliases: {
       type: [String],
@@ -38,7 +21,19 @@ const skillSchema = new mongoose.Schema(
     demandLevel: {
       type: String,
       enum: ['High', 'Medium', 'Low'],
-      default: 'Medium',
+      default: 'High',
+    },
+    weightMultiplier: {
+      type: Number,
+      default: 1.0,
+      min: 0.5,
+      max: 3.0,
+    },
+    popularity: {
+      type: Number,
+      default: 85,
+      min: 0,
+      max: 100,
     },
   },
   {
