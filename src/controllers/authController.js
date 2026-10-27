@@ -22,6 +22,13 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
+export const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+};
+
 export const register = asyncHandler(async (req, res) => {
   const {
     name,
@@ -100,21 +107,15 @@ export const register = asyncHandler(async (req, res) => {
     '-password -refreshToken'
   );
 
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  };
-
   return res
     .status(201)
     .cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 1 * 24 * 60 * 60 * 1000,
     })
     .cookie('refreshToken', refreshToken, {
       ...cookieOptions,
-      maxAge: 10 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     })
     .json(
       new ApiResponse(
@@ -156,21 +157,15 @@ export const login = asyncHandler(async (req, res) => {
     '-password -refreshToken'
   );
 
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  };
-
   return res
     .status(200)
     .cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 1 * 24 * 60 * 60 * 1000,
     })
     .cookie('refreshToken', refreshToken, {
       ...cookieOptions,
-      maxAge: 10 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     })
     .json(
       new ApiResponse(
@@ -201,16 +196,6 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, 'Invalid refresh token: User not found');
     }
 
-    if (incomingRefreshToken !== user?.refreshToken) {
-      throw new ApiError(401, 'Refresh token is expired or has been used');
-    }
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    };
-
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshToken(user._id);
 
@@ -218,11 +203,11 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       .status(200)
       .cookie('accessToken', accessToken, {
         ...cookieOptions,
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 1 * 24 * 60 * 60 * 1000,
       })
       .cookie('refreshToken', newRefreshToken, {
         ...cookieOptions,
-        maxAge: 10 * 24 * 60 * 60 * 1000,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       })
       .json(
         new ApiResponse(
@@ -259,26 +244,87 @@ export const updateProfile = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'User not found');
   }
 
-  const allowedFields = [
+  const allowedSimpleFields = [
     'name',
     'department',
     'phone',
     'location',
     'headline',
     'bio',
-    'skills',
-    'education',
-    'experience',
-    'certifications',
+    'avatar',
     'companyProfile',
     'resumeUrl',
+    'resumeFileName',
+    'resumeFileSize',
+    'links',
   ];
 
-  allowedFields.forEach((field) => {
+  allowedSimpleFields.forEach((field) => {
     if (req.body[field] !== undefined) {
       user[field] = req.body[field];
     }
   });
+
+  // Normalize skills whether passed as string array or object array
+  if (req.body.skills !== undefined && Array.isArray(req.body.skills)) {
+    user.skills = req.body.skills.map((s) =>
+      typeof s === 'string'
+        ? { name: s.trim().toLowerCase(), proficiency: 'Intermediate' }
+        : {
+            name: (s.name || '').trim().toLowerCase(),
+            proficiency: s.proficiency || 'Intermediate',
+            ...(s.skill && { skill: s.skill }),
+          }
+    );
+  }
+
+  // Normalize education items
+  if (req.body.education !== undefined && Array.isArray(req.body.education)) {
+    user.education = req.body.education.map((edu) => ({
+      ...(edu._id && { _id: edu._id }),
+      degree: edu.degree || '',
+      institute: edu.institute || '',
+      field: edu.field || user.department || '',
+      startYear: edu.startYear || (edu.graduationYear ? Number(edu.graduationYear) - 4 : undefined),
+      endYear: edu.endYear || (edu.graduationYear ? Number(edu.graduationYear) : undefined),
+      graduationYear: edu.graduationYear ? String(edu.graduationYear) : (edu.endYear ? String(edu.endYear) : ''),
+      gradeOrCgpa: edu.gradeOrCgpa || edu.cgpa || '',
+      cgpa: edu.cgpa || edu.gradeOrCgpa || '',
+      status: edu.status || 'Completed',
+    }));
+  }
+
+  // Normalize experience items
+  if (req.body.experience !== undefined && Array.isArray(req.body.experience)) {
+    user.experience = req.body.experience.map((exp) => ({
+      ...(exp._id && { _id: exp._id }),
+      type: exp.type || 'experience',
+      title: exp.title || '',
+      company: exp.company || '',
+      duration: exp.duration || '',
+      location: exp.location || '',
+      startDate: exp.startDate || undefined,
+      endDate: exp.endDate || undefined,
+      current: exp.current || false,
+      description: exp.description || exp.duration || '',
+      link: exp.link || '',
+    }));
+  }
+
+  // Normalize certifications items
+  if (req.body.certifications !== undefined && Array.isArray(req.body.certifications)) {
+    user.certifications = req.body.certifications.map((cert) => ({
+      ...(cert._id && { _id: cert._id }),
+      name: cert.name || '',
+      issuingOrganization: cert.issuingOrganization || '',
+      issueDate: cert.issueDate || undefined,
+      credentialUrl: cert.credentialUrl || '',
+    }));
+  }
+
+  if (req.body.resumeFileName || req.body.resumeUrl) {
+    user.resumeUploadedAt = new Date();
+  }
 
   user.profileCompleted = true;
   await user.save();
@@ -290,6 +336,48 @@ export const updateProfile = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, updatedUser, 'Profile updated successfully'));
+});
+
+export const updateUserByAdmin = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const { name, role, status, department, headline, bio, phone, location } =
+    req.body;
+  if (name !== undefined) user.name = name;
+  if (role !== undefined) user.role = role;
+  if (status !== undefined) user.status = status;
+  if (department !== undefined) user.department = department;
+  if (headline !== undefined) user.headline = headline;
+  if (bio !== undefined) user.bio = bio;
+  if (phone !== undefined) user.phone = phone;
+  if (location !== undefined) user.location = location;
+
+  await user.save();
+
+  const updatedUser = await User.findById(user._id).select(
+    '-password -refreshToken'
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedUser, 'User updated by admin successfully')
+    );
+});
+
+export const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find()
+    .select('-password -refreshToken')
+    .sort({ createdAt: -1 });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, 'Users fetched successfully'));
 });
 
 export const logout = asyncHandler(async (req, res) => {
@@ -304,12 +392,6 @@ export const logout = asyncHandler(async (req, res) => {
       new: true,
     }
   );
-
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  };
 
   return res
     .status(200)

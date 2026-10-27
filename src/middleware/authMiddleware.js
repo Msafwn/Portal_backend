@@ -48,3 +48,33 @@ export const authorizeRoles = (...roles) => {
     next();
   };
 };
+
+export const optionalProtect = asyncHandler(async (req, res, next) => {
+  let token =
+    req.cookies?.accessToken ||
+    (req.headers.authorization && req.headers.authorization.startsWith('Bearer')
+      ? req.headers.authorization.split(' ')[1]
+      : null);
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET || 'access_secret_key'
+    );
+
+    const user = await User.findById(decoded?.id).select(
+      '-password -refreshToken'
+    );
+    if (user) {
+      req.user = user;
+    }
+  } catch (error) {
+    // In optional authentication, continue even if token is expired/invalid
+  }
+  next();
+});
+

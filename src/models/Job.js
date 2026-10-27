@@ -125,12 +125,38 @@ const jobSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Open', 'Closed', 'Draft'],
+      enum: ['Open', 'Closed', 'Draft', 'Active', 'Paused'],
       default: 'Open',
+    },
+    totalSeats: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
+    filledSeats: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     applicantsCount: {
       type: Number,
       default: 0,
+    },
+    overview: {
+      type: String,
+      trim: true,
+    },
+    requirements: {
+      type: [String],
+      default: [],
+    },
+    qualifications: {
+      type: String,
+      trim: true,
+    },
+    perks: {
+      type: [String],
+      default: [],
     },
   },
   {

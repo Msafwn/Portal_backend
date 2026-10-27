@@ -27,24 +27,35 @@ const educationItemSchema = new mongoose.Schema(
   {
     degree: { type: String, required: true, trim: true },
     institute: { type: String, required: true, trim: true },
+    field: { type: String, trim: true },
     startYear: { type: Number },
     endYear: { type: Number },
+    graduationYear: { type: String, trim: true },
     gradeOrCgpa: { type: String, trim: true },
+    cgpa: { type: String, trim: true },
+    status: { type: String, trim: true, default: 'Completed' },
   },
-  { _id: false }
+  { _id: true }
 );
 
 const experienceItemSchema = new mongoose.Schema(
   {
+    type: {
+      type: String,
+      enum: ['experience', 'project'],
+      default: 'experience',
+    },
     title: { type: String, required: true, trim: true },
     company: { type: String, required: true, trim: true },
+    duration: { type: String, trim: true },
     location: { type: String, trim: true },
     startDate: { type: Date },
     endDate: { type: Date },
     current: { type: Boolean, default: false },
     description: { type: String, trim: true },
+    link: { type: String, trim: true },
   },
-  { _id: false }
+  { _id: true }
 );
 
 const certificationItemSchema = new mongoose.Schema(
@@ -93,6 +104,15 @@ const userSchema = new mongoose.Schema(
       ],
       default: 'fresh_graduate',
     },
+    status: {
+      type: String,
+      enum: ['active', 'pending', 'banned'],
+      default: 'active',
+    },
+    avatar: {
+      type: String,
+      default: '',
+    },
     department: {
       type: String,
       default: 'Information Technology',
@@ -118,8 +138,27 @@ const userSchema = new mongoose.Schema(
     education: [educationItemSchema],
     experience: [experienceItemSchema],
     certifications: [certificationItemSchema],
+    links: {
+      github: { type: String, trim: true, default: '' },
+      linkedin: { type: String, trim: true, default: '' },
+      portfolio: { type: String, trim: true, default: '' },
+    },
     resumeUrl: {
       type: String,
+      default: '',
+    },
+    resumeFileName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    resumeFileSize: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    resumeUploadedAt: {
+      type: Date,
     },
     companyProfile: {
       companyName: { type: String, trim: true },
@@ -127,6 +166,10 @@ const userSchema = new mongoose.Schema(
       website: { type: String, trim: true },
       description: { type: String, trim: true },
       companySize: { type: String, trim: true },
+      tagline: { type: String, trim: true },
+      logoInitials: { type: String, trim: true },
+      totalSeatsQuota: { type: Number, default: 12 },
+      filledSeatsCount: { type: Number, default: 0 },
     },
     refreshToken: {
       type: String,
@@ -189,4 +232,3 @@ userSchema.methods.generateRefreshToken = function () {
 const User = mongoose.model('User', userSchema);
 
 export default User;
-

@@ -1,7 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { csrfProtection } from './middleware/csrfMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
+import candidateRoutes from './routes/candidateRoutes.js';
+import interviewRoutes from './routes/interviewRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import applicationRoutes from './routes/applicationRoutes.js';
+import jobRoutes from './routes/jobRoutes.js';
 
 const app = express();
 
@@ -14,10 +21,11 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '16kb' }));
-app.use(express.urlencoded({ extended: true, limit: '16kb' }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 app.use(cookieParser());
+app.use(csrfProtection);
 
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -29,6 +37,13 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/candidate', candidateRoutes);
+app.use('/api/users', candidateRoutes);
+app.use('/api/jobs', jobRoutes);
+app.use('/api/applications', applicationRoutes);
+app.use('/api/interviews', interviewRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
