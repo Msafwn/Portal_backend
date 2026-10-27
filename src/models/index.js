@@ -7,6 +7,9 @@ import Notification from './Notification.js';
 import InterviewSession from './InterviewSession.js';
 import ChatSession from './ChatSession.js';
 import AiSetting from './AiSetting.js';
+import AuditLog from './AuditLog.js';
+import SecurityAlert from './SecurityAlert.js';
+import LoginHistory from './LoginHistory.js';
 
 export {
   User,
@@ -18,6 +21,9 @@ export {
   InterviewSession,
   ChatSession,
   AiSetting,
+  AuditLog,
+  SecurityAlert,
+  LoginHistory,
 };
 
 export default {
@@ -30,6 +36,9 @@ export default {
   InterviewSession,
   ChatSession,
   AiSetting,
+  AuditLog,
+  SecurityAlert,
+  LoginHistory,
 };
 
 

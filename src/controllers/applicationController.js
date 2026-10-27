@@ -5,6 +5,10 @@ import Notification from '../models/Notification.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import {
+  sendInterviewInvitationEmail,
+  sendCandidateShortlistedEmail,
+} from '../utils/emailService.js';
 
 /**
  * Helper: Calculate Skill Match Score between Candidate and Job
@@ -562,7 +566,10 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     );
   }
 
-  const application = await Application.findById(id).populate('job', 'title company employer');
+  const application = await Application.findById(id)
+    .populate('job', 'title company employer')
+    .populate('applicant', 'name email phone');
+
   if (!application) {
     throw new ApiError(404, 'Application not found');
   }
@@ -581,7 +588,7 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
 
   await application.save();
 
-  // Create notification for Candidate
+  // Create in-app notification for Candidate
   try {
     let notifTitle = `Application Status Update: ${status}`;
     let notifMsg = `Your application for "${application.job?.title}" at ${application.job?.company} has been updated to "${status}".`;
@@ -602,7 +609,7 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     }
 
     await Notification.create({
-      recipient: application.applicant,
+      recipient: application.applicant?._id || application.applicant,
       sender: req.user.id,
       title: notifTitle,
       message: notifMsg,
@@ -616,6 +623,20 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
     });
   } catch (err) {
     console.warn('Failed to notify candidate of status change:', err.message);
+  }
+
+  // Real-time Email on Shortlisted
+  if (status === 'Shortlisted' && application.applicant?.email) {
+    try {
+      await sendCandidateShortlistedEmail({
+        to: application.applicant.email,
+        candidateName: application.applicant.name || 'Candidate',
+        jobTitle: application.job?.title || 'Selected Role',
+        company: application.job?.company || 'Recruiting Company',
+      });
+    } catch (shortlistErr) {
+      console.warn('Shortlist email dispatch error:', shortlistErr.message);
+    }
   }
 
   return res
@@ -635,7 +656,10 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Interview date and time are required');
   }
 
-  const application = await Application.findById(id).populate('job', 'title company employer');
+  const application = await Application.findById(id)
+    .populate('job', 'title company employer')
+    .populate('applicant', 'name email phone');
+
   if (!application) {
     throw new ApiError(404, 'Application not found');
   }
@@ -661,10 +685,10 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
 
   await application.save();
 
-  // Notify candidate
+  // 1. In-app notification for candidate
   try {
     await Notification.create({
-      recipient: application.applicant,
+      recipient: application.applicant?._id || application.applicant,
       sender: req.user.id,
       title: 'Interview Scheduled 🗓️',
       message: `Your interview for "${application.job?.title}" at ${application.job?.company} is confirmed for ${date} at ${time} (${mode}).`,
@@ -677,7 +701,31 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
       },
     });
   } catch (err) {
-    console.warn('Failed to notify candidate of interview:', err.message);
+    console.warn('Failed to notify candidate of interview in-app:', err.message);
+  }
+
+  // 2. Real-time Email Notification via Gmail SMTP
+  try {
+    const candidateEmail = application.applicant?.email;
+    const candidateName = application.applicant?.name || 'Candidate';
+    const jobTitle = application.job?.title || 'Selected Role';
+    const companyName = application.job?.company || 'Recruiting Company';
+
+    if (candidateEmail) {
+      await sendInterviewInvitationEmail({
+        to: candidateEmail,
+        candidateName,
+        jobTitle,
+        company: companyName,
+        date,
+        time,
+        mode,
+        meetingLink,
+        notes,
+      });
+    }
+  } catch (emailErr) {
+    console.warn('Real email dispatch failed (non-blocking):', emailErr.message);
   }
 
   return res.status(200).json(

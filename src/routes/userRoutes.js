@@ -30,6 +30,9 @@ import {
   getAllSkillsAdmin,
   createSkillAdmin,
   deleteSkillAdmin,
+  getAdminAuditAndSecurityLogs,
+  resolveSecurityAlertAdmin,
+  blockIpAddressAdmin,
 } from '../controllers/userController.js';
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
@@ -74,6 +77,11 @@ router.post('/admin/ai-settings/reset', protect, authorizeRoles('admin', 'super_
 router.get('/admin/skills', protect, authorizeRoles('admin', 'super_admin'), getAllSkillsAdmin);
 router.post('/admin/skills', protect, authorizeRoles('admin', 'super_admin'), createSkillAdmin);
 router.delete('/admin/skills/:id', protect, authorizeRoles('admin', 'super_admin'), deleteSkillAdmin);
+
+// Forensic Audit Trail & Security Sentinel Desk (Must be before :id)
+router.get('/admin/logs', protect, authorizeRoles('admin', 'super_admin'), getAdminAuditAndSecurityLogs);
+router.put('/admin/security-alerts/:id/resolve', protect, authorizeRoles('admin', 'super_admin'), resolveSecurityAlertAdmin);
+router.post('/admin/security/block-ip', protect, authorizeRoles('admin', 'super_admin'), blockIpAddressAdmin);
 
 // Employer & Corporate Verification Admin Routes (must be before :id)
 router.get('/admin/employers/all', protect, authorizeRoles('admin', 'super_admin'), getAllEmployersAdmin);
