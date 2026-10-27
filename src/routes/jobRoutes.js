@@ -8,6 +8,12 @@ import {
   deleteJob,
   getEmployerMyJobs,
   getJobFiltersMeta,
+  getAllJobsAdmin,
+  getJobByIdAdmin,
+  updateJobModerationStatusAdmin,
+  bulkUpdateJobModerationStatusAdmin,
+  deleteJobAdmin,
+  bulkDeleteJobsAdmin,
 } from '../controllers/jobController.js';
 import { getCandidateRoleMatches } from '../controllers/candidateController.js';
 import {
@@ -54,6 +60,16 @@ router.post(
   authorizeRoles('employer', 'admin'),
   generateJobDescriptionAi
 );
+
+// -------------------------------------------------------------
+// Admin Vacancy Moderation Endpoints (must be placed before /:id)
+// -------------------------------------------------------------
+router.get('/admin/all', protect, authorizeRoles('admin', 'super_admin'), getAllJobsAdmin);
+router.post('/admin/bulk-status', protect, authorizeRoles('admin', 'super_admin'), bulkUpdateJobModerationStatusAdmin);
+router.post('/admin/bulk-delete', protect, authorizeRoles('admin', 'super_admin'), bulkDeleteJobsAdmin);
+router.get('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), getJobByIdAdmin);
+router.put('/admin/:id/status', protect, authorizeRoles('admin', 'super_admin'), updateJobModerationStatusAdmin);
+router.delete('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), deleteJobAdmin);
 
 // -------------------------------------------------------------
 // Single Job Details Dossier

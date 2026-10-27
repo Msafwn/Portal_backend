@@ -15,7 +15,14 @@ import {
   getAllUsersAdmin,
   getUserByIdAdmin,
   updateUserStatusByAdmin,
+  bulkUpdateUserStatusByAdmin,
+  evaluateCandidateAiByAdmin,
   deleteUserByAdmin,
+  getAllEmployersAdmin,
+  getEmployerByIdAdmin,
+  updateEmployerVerificationAdmin,
+  bulkUpdateEmployerVerificationAdmin,
+  deleteEmployerAdmin,
 } from '../controllers/userController.js';
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
@@ -48,9 +55,20 @@ router.post('/resume', protect, updateResume);
 // ===================================
 // ADMIN MANAGEMENT ROUTES
 // ===================================
+// Employer & Corporate Verification Admin Routes (must be before :id)
+router.get('/admin/employers/all', protect, authorizeRoles('admin', 'super_admin'), getAllEmployersAdmin);
+router.get('/admin/employers', protect, authorizeRoles('admin', 'super_admin'), getAllEmployersAdmin);
+router.post('/admin/employers/bulk-verification', protect, authorizeRoles('admin', 'super_admin'), bulkUpdateEmployerVerificationAdmin);
+router.get('/admin/employers/:id', protect, authorizeRoles('admin', 'super_admin'), getEmployerByIdAdmin);
+router.put('/admin/employers/:id/verification', protect, authorizeRoles('admin', 'super_admin'), updateEmployerVerificationAdmin);
+router.delete('/admin/employers/:id', protect, authorizeRoles('admin', 'super_admin'), deleteEmployerAdmin);
+
+// Candidate Admin Routes
 router.get('/admin/all', protect, authorizeRoles('admin', 'super_admin'), getAllUsersAdmin);
-router.get('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), getUserByIdAdmin);
+router.post('/admin/bulk-status', protect, authorizeRoles('admin', 'super_admin'), bulkUpdateUserStatusByAdmin);
+router.post('/admin/:id/ai-evaluate', protect, authorizeRoles('admin', 'super_admin'), evaluateCandidateAiByAdmin);
 router.put('/admin/:id/status', protect, authorizeRoles('admin', 'super_admin'), updateUserStatusByAdmin);
 router.delete('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), deleteUserByAdmin);
+router.get('/admin/:id', protect, authorizeRoles('admin', 'super_admin'), getUserByIdAdmin);
 
 export default router;

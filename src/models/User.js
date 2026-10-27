@@ -109,6 +109,11 @@ const userSchema = new mongoose.Schema(
       enum: ['active', 'pending', 'banned'],
       default: 'active',
     },
+    banReason: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     avatar: {
       type: String,
       default: '',
@@ -167,9 +172,28 @@ const userSchema = new mongoose.Schema(
       description: { type: String, trim: true },
       companySize: { type: String, trim: true },
       tagline: { type: String, trim: true },
+      logo: { type: String, trim: true },
       logoInitials: { type: String, trim: true },
       totalSeatsQuota: { type: Number, default: 12 },
       filledSeatsCount: { type: Number, default: 0 },
+      ntnNumber: { type: String, trim: true, default: '' },
+      secpRegNumber: { type: String, trim: true, default: '' },
+      headquarters: { type: String, trim: true, default: '' },
+      verificationStatus: {
+        type: String,
+        enum: ['verified', 'pending', 'suspended'],
+        default: 'pending',
+      },
+      verifiedDate: { type: String, default: '' },
+      submittedDate: { type: String, default: '' },
+      rejectionReason: { type: String, trim: true, default: '' },
+      documents: [
+        {
+          name: { type: String, required: true },
+          verified: { type: Boolean, default: false },
+          fileUrl: { type: String, default: '' },
+        },
+      ],
     },
     refreshToken: {
       type: String,

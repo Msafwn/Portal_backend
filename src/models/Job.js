@@ -128,6 +128,37 @@ const jobSchema = new mongoose.Schema(
       enum: ['Open', 'Closed', 'Draft', 'Active', 'Paused'],
       default: 'Open',
     },
+    moderationStatus: {
+      type: String,
+      enum: ['approved', 'pending', 'flagged', 'blocked'],
+      default: 'approved',
+    },
+    riskScore: {
+      type: Number,
+      default: 98,
+      min: 0,
+      max: 100,
+    },
+    flagReason: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    discipline: {
+      type: String,
+      trim: true,
+      default: 'Computer Science & IT',
+    },
+    targetRole: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    experienceLevel: {
+      type: String,
+      trim: true,
+      default: 'Fresh Graduate',
+    },
     totalSeats: {
       type: Number,
       default: 1,
