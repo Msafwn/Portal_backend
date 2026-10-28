@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Job from '../models/Job.js';
 import Application from '../models/Application.js';
+import InterviewSession from '../models/InterviewSession.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -223,6 +224,60 @@ export const callPythonAiCandidateEvaluation = async (user) => {
 // ==========================================
 // 1. Candidate Profile Overview (GET & PUT)
 // ==========================================
+
+
+// GET /api/candidate/dashboard
+export const getCandidateDashboard = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select(
+    '-password -refreshToken'
+  );
+
+  if (!user) {
+    throw new ApiError(404, 'Candidate not found');
+  }
+
+  // 1. Fetch user applications
+  const myApplications = await Application.find({ candidate: req.user.id })
+    .populate('job', 'title company location department matchScore')
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const appliedJobIds = myApplications.map((app) =>
+    app.job?._id ? String(app.job._id) : String(app.job)
+  );
+
+  // 2. Fetch latest interview session
+  const nextInterview = await InterviewSession.findOne({ candidate: req.user.id })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // 3. Evaluate stats via Python AI or local fallback
+  const { stats, atsAnalysis } = await callPythonAiCandidateEvaluation(user);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        profile: user,
+        stats,
+        atsAnalysis,
+        appliedJobIds,
+        applicationsCount: myApplications.length,
+        myApplications,
+        nextInterview: nextInterview
+          ? {
+              id: nextInterview._id,
+              roleTitle: nextInterview.roleTitle,
+              department: nextInterview.department,
+              overallScore: nextInterview.overallScore,
+              date: nextInterview.createdAt,
+            }
+          : null,
+      },
+      'Candidate dashboard statistics retrieved successfully'
+    )
+  );
+});
 
 // GET /api/candidate/profile
 export const getCandidateProfile = asyncHandler(async (req, res) => {

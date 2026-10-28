@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  getCandidateDashboard,
   getCandidateProfile,
   updateCandidateProfile,
   uploadAvatarFile,
@@ -33,6 +34,7 @@ const router = express.Router();
 router.use(protect);
 
 // 1. Profile Overview (GET & PUT)
+router.get('/dashboard', getCandidateDashboard);
 router.get('/profile', getCandidateProfile);
 router.put('/profile', updateCandidateProfile);
 
