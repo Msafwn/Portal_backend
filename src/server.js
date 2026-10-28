@@ -4,11 +4,14 @@ dotenv.config();
 import http from 'http';
 import app from './app.js';
 import connectDB from './config/db.js';
+import { ensureAdminExists } from './config/seedAdmin.js';
 import { initSocket } from './socket.js';
 
 const PORT = process.env.PORT || 5000;
 
-connectDB();
+connectDB().then(() => {
+  ensureAdminExists();
+});
 
 const httpServer = http.createServer(app);
 

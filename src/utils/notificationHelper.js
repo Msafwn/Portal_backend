@@ -41,3 +41,4 @@ export const createAndSendNotification = async ({
     return null;
   }
 };
+

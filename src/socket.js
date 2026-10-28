@@ -95,3 +95,4 @@ export const emitNotificationToRole = (role, notification) => {
   const targetRoom = `role:${role}`;
   io.to(targetRoom).emit('notification:new', notification);
 };
+
