@@ -38,15 +38,51 @@ export const computeCandidateStats = (user) => {
   const expCount = user.experience?.length || 0;
   if (expCount >= 1) completion += 10;
 
-  completion = Math.min(100, Math.max(20, completion));
+  // Resume Upload (10%)
+  if (user.resumeFileName || user.resumeUrl) {
+    completion += 10;
+  }
 
-  // Dynamic AI Fit Score / Match Index (70% - 98%)
-  let matchIndex = 70;
-  matchIndex += Math.min(16, skillsCount * 2);
-  if (eduCount >= 1) matchIndex += 5;
-  if (expCount >= 1) matchIndex += 4;
-  if (user.resumeFileName || user.resumeUrl) matchIndex += 3;
-  matchIndex = Math.min(98, matchIndex);
+  completion = Math.min(100, completion);
+
+  // Dynamic Profile-Derived AI Match Index (Calculated 100% from User Profile Data)
+  // 1. Technical Skills Qualification (up to 35%)
+  let skillsScore = 0;
+  if (skillsCount > 0) {
+    skillsScore = Math.min(30, skillsCount * 6);
+    const expertSkills = (user.skills || []).filter(
+      (s) => s.proficiency === 'Expert' || s.proficiency === 'Intermediate'
+    ).length;
+    if (expertSkills > 0) skillsScore += Math.min(5, expertSkills * 2);
+  }
+
+  // 2. Academic Qualification (up to 25%)
+  let eduScore = 0;
+  if (eduCount >= 1) {
+    eduScore = 20;
+    const hasCgpa = user.education.some((e) => e.cgpa || e.gradeOrCgpa);
+    if (hasCgpa) eduScore += 5;
+  }
+
+  // 3. Practical Experience & Projects (up to 20%)
+  let expScore = 0;
+  if (expCount > 0) {
+    expScore = Math.min(20, expCount * 10);
+  }
+
+  // 4. Resume & ATS Readability (up to 10%)
+  let resumeScore = (user.resumeFileName || user.resumeUrl) ? 10 : 0;
+
+  // 5. Professional Verification & Contact (up to 10%)
+  let verifiedScore = 0;
+  if (user.name && user.email) verifiedScore += 4;
+  if (user.phone && user.location) verifiedScore += 3;
+  if (user.links?.github || user.links?.linkedin || user.links?.portfolio) verifiedScore += 3;
+
+  let matchIndex = Math.min(
+    100,
+    Math.round(skillsScore + eduScore + expScore + resumeScore + verifiedScore)
+  );
 
   const checklist = {
     personalInfoVerified: Boolean(user.name && user.headline && user.bio),
@@ -1251,26 +1287,61 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
     };
   });
 
-  // If candidate has few missing skills, fallback default gaps
+  const candidateStats = computeCandidateStats(user);
+
+  // If candidate has few missing skills from matched jobs, dynamically recommend missing department curriculum skills
   if (skillGaps.length === 0) {
-    skillGaps.push({
-      id: 'gap-1',
-      skill: 'Docker & Containerization',
-      impact: '+8% Match Boost',
-      rolesUnlocked: 'Top DevOps & Full Stack Roles',
-      category: user.department || 'Information Technology',
-      resource: 'Interactive 2-Hour Practical Tutorial',
+    const dept = (user.department || '').toLowerCase();
+    const existing = new Set((user.skills || []).map((s) => (s?.name || '').toLowerCase()));
+
+    let deptCurriculum = [];
+    if (dept.includes('med') || dept.includes('health')) {
+      deptCurriculum = [
+        { name: 'Patient Triage Protocols', cat: 'Healthcare & Clinical', boost: 12, roles: 'Hospital & ER Roles' },
+        { name: 'Clinical Pharmacology', cat: 'Healthcare & Clinical', boost: 10, roles: 'Medical Specialist Roles' },
+      ];
+    } else if (dept.includes('eng') || dept.includes('civil') || dept.includes('mech')) {
+      deptCurriculum = [
+        { name: 'AutoCAD & Technical Drafting', cat: 'Engineering Design', boost: 12, roles: 'Structural & Site Roles' },
+        { name: 'ETABS Structural Analysis', cat: 'Engineering Analysis', boost: 10, roles: 'Design Engineer Roles' },
+      ];
+    } else if (dept.includes('bus') || dept.includes('fin') || dept.includes('bank')) {
+      deptCurriculum = [
+        { name: 'Financial Modeling & Valuation', cat: 'Corporate Finance', boost: 12, roles: 'Financial Analyst Roles' },
+        { name: 'Advanced Excel & Pivot Analysis', cat: 'Data & Reporting', boost: 10, roles: 'Business Intelligence Roles' },
+      ];
+    } else {
+      deptCurriculum = [
+        { name: 'Git & Version Control', cat: 'Software Engineering', boost: 10, roles: 'Full Stack & DevOps Roles' },
+        { name: 'RESTful API Architecture', cat: 'Backend Engineering', boost: 12, roles: 'API & Backend Roles' },
+        { name: 'Docker & Containerization', cat: 'DevOps & Cloud', boost: 8, roles: 'Cloud Deployment Roles' },
+      ];
+    }
+
+    const missingFromCurriculum = deptCurriculum.filter(
+      (item) => !existing.has(item.name.toLowerCase())
+    );
+
+    missingFromCurriculum.slice(0, 3).forEach((item, idx) => {
+      skillGaps.push({
+        id: `gap-${idx + 1}`,
+        skill: item.name,
+        impact: `+${item.boost}% Match Boost`,
+        rolesUnlocked: item.roles,
+        category: item.cat,
+        resource: `Recommended: Practical ${item.name} Learning Path`,
+      });
     });
   }
 
-  const topScore = matchedRoles[0]?.matchPercentage || 94;
+  const topScore = matchedRoles.length > 0 ? matchedRoles[0].matchPercentage : candidateStats.matchIndex;
   const avgScore =
     matchedRoles.length > 0
       ? Math.round(
           matchedRoles.reduce((acc, r) => acc + r.matchPercentage, 0) /
             matchedRoles.length
         )
-      : 80;
+      : candidateStats.matchIndex;
 
   return res.status(200).json(
     new ApiResponse(
