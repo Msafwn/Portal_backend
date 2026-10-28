@@ -32,7 +32,10 @@ import { uploadAvatar, uploadResume } from '../middleware/uploadMiddleware.js';
 
 const router = express.Router();
 
-// All candidate endpoints require authentication
+// Public / Semi-public AI Benchmark Demo endpoint (no token required)
+router.get('/benchmark-departments', getMultiDeptBenchmark);
+
+// All other candidate endpoints require authentication
 router.use(protect);
 
 // 1. Profile Overview (GET & PUT)
@@ -74,7 +77,6 @@ router.post('/upload-resume', uploadResume, uploadResumeFile);
 router.post('/resume', updateResume);
 router.delete('/resume', deleteResume);
 router.get('/resume-analysis', getResumeAnalysis);
-router.get('/benchmark-departments', getMultiDeptBenchmark);
 
 // 8. Password & Security
 router.put('/change-password', changeCandidatePassword);
