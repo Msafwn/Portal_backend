@@ -2,6 +2,7 @@ import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
+import { emitNotificationToUser } from '../socket.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -164,7 +165,7 @@ export const applyToJob = asyncHandler(async (req, res) => {
   // 6. Notify Employer if recruiter user is assigned
   if (job.employer) {
     try {
-      await Notification.create({
+      const employerNotif = await Notification.create({
         recipient: job.employer,
         sender: req.user.id,
         title: 'New Applicant Received 🚀',
@@ -177,6 +178,7 @@ export const applyToJob = asyncHandler(async (req, res) => {
           applicantName: req.user.name,
         },
       });
+      emitNotificationToUser(job.employer, employerNotif);
     } catch (notifErr) {
       console.warn(
         'Failed to send notification to employer:',
@@ -686,8 +688,9 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
       notifMsg += ` Note from recruiter: "${employerNotes}"`;
     }
 
-    await Notification.create({
-      recipient: application.applicant?._id || application.applicant,
+    const candRecipient = application.applicant?._id || application.applicant;
+    const candNotif = await Notification.create({
+      recipient: candRecipient,
       sender: req.user.id,
       title: notifTitle,
       message: notifMsg,
@@ -699,6 +702,7 @@ export const updateApplicationStatus = asyncHandler(async (req, res) => {
         status,
       },
     });
+    emitNotificationToUser(candRecipient, candNotif);
   } catch (err) {
     console.warn('Failed to notify candidate of status change:', err.message);
   }
@@ -781,8 +785,9 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
 
   // 1. In-app notification for candidate
   try {
-    await Notification.create({
-      recipient: application.applicant?._id || application.applicant,
+    const candRecipient = application.applicant?._id || application.applicant;
+    const interviewNotif = await Notification.create({
+      recipient: candRecipient,
       sender: req.user.id,
       title: 'Interview Scheduled 🗓️',
       message: `Your interview for "${application.job?.title}" at ${application.job?.company} is confirmed for ${date} at ${time} (${mode}).`,
@@ -794,6 +799,7 @@ export const scheduleInterview = asyncHandler(async (req, res) => {
         interview: application.interview,
       },
     });
+    emitNotificationToUser(candRecipient, interviewNotif);
   } catch (err) {
     console.warn(
       'Failed to notify candidate of interview in-app:',

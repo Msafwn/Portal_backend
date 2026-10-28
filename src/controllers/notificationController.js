@@ -2,6 +2,7 @@ import Notification from '../models/Notification.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { emitNotificationToUser } from '../socket.js';
 
 /**
  * @desc    Get all notifications for logged-in user + unread count
@@ -107,6 +108,9 @@ export const createNotification = asyncHandler(async (req, res) => {
     link: link || '',
     metadata: metadata || null,
   });
+
+  // Real-time WebSocket emission
+  emitNotificationToUser(targetRecipient, newNotification);
 
   return res
     .status(201)
