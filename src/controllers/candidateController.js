@@ -1287,61 +1287,15 @@ export const getCandidateRoleMatches = asyncHandler(async (req, res) => {
     };
   });
 
-  const candidateStats = computeCandidateStats(user);
-
-  // If candidate has few missing skills from matched jobs, dynamically recommend missing department curriculum skills
-  if (skillGaps.length === 0) {
-    const dept = (user.department || '').toLowerCase();
-    const existing = new Set((user.skills || []).map((s) => (s?.name || '').toLowerCase()));
-
-    let deptCurriculum = [];
-    if (dept.includes('med') || dept.includes('health')) {
-      deptCurriculum = [
-        { name: 'Patient Triage Protocols', cat: 'Healthcare & Clinical', boost: 12, roles: 'Hospital & ER Roles' },
-        { name: 'Clinical Pharmacology', cat: 'Healthcare & Clinical', boost: 10, roles: 'Medical Specialist Roles' },
-      ];
-    } else if (dept.includes('eng') || dept.includes('civil') || dept.includes('mech')) {
-      deptCurriculum = [
-        { name: 'AutoCAD & Technical Drafting', cat: 'Engineering Design', boost: 12, roles: 'Structural & Site Roles' },
-        { name: 'ETABS Structural Analysis', cat: 'Engineering Analysis', boost: 10, roles: 'Design Engineer Roles' },
-      ];
-    } else if (dept.includes('bus') || dept.includes('fin') || dept.includes('bank')) {
-      deptCurriculum = [
-        { name: 'Financial Modeling & Valuation', cat: 'Corporate Finance', boost: 12, roles: 'Financial Analyst Roles' },
-        { name: 'Advanced Excel & Pivot Analysis', cat: 'Data & Reporting', boost: 10, roles: 'Business Intelligence Roles' },
-      ];
-    } else {
-      deptCurriculum = [
-        { name: 'Git & Version Control', cat: 'Software Engineering', boost: 10, roles: 'Full Stack & DevOps Roles' },
-        { name: 'RESTful API Architecture', cat: 'Backend Engineering', boost: 12, roles: 'API & Backend Roles' },
-        { name: 'Docker & Containerization', cat: 'DevOps & Cloud', boost: 8, roles: 'Cloud Deployment Roles' },
-      ];
-    }
-
-    const missingFromCurriculum = deptCurriculum.filter(
-      (item) => !existing.has(item.name.toLowerCase())
-    );
-
-    missingFromCurriculum.slice(0, 3).forEach((item, idx) => {
-      skillGaps.push({
-        id: `gap-${idx + 1}`,
-        skill: item.name,
-        impact: `+${item.boost}% Match Boost`,
-        rolesUnlocked: item.roles,
-        category: item.cat,
-        resource: `Recommended: Practical ${item.name} Learning Path`,
-      });
-    });
-  }
-
-  const topScore = matchedRoles.length > 0 ? matchedRoles[0].matchPercentage : candidateStats.matchIndex;
+  // When no jobs exist in DB or no missing skills identified, keep skillGaps clean empty [] (Zero mock / fake skills)
+  const topScore = matchedRoles.length > 0 ? (matchedRoles[0]?.matchPercentage || 0) : 0;
   const avgScore =
     matchedRoles.length > 0
       ? Math.round(
           matchedRoles.reduce((acc, r) => acc + r.matchPercentage, 0) /
             matchedRoles.length
         )
-      : candidateStats.matchIndex;
+      : 0;
 
   return res.status(200).json(
     new ApiResponse(
