@@ -23,6 +23,7 @@ import {
   deleteResume,
   updateResume,
   getResumeAnalysis,
+  getMultiDeptBenchmark,
   changeCandidatePassword,
   getCandidateRoleMatches,
 } from '../controllers/candidateController.js';
@@ -73,6 +74,7 @@ router.post('/upload-resume', uploadResume, uploadResumeFile);
 router.post('/resume', updateResume);
 router.delete('/resume', deleteResume);
 router.get('/resume-analysis', getResumeAnalysis);
+router.get('/benchmark-departments', getMultiDeptBenchmark);
 
 // 8. Password & Security
 router.put('/change-password', changeCandidatePassword);
