@@ -20,6 +20,7 @@ import {
   addCertification,
   deleteCertification,
   uploadResumeFile,
+  deleteResume,
   updateResume,
   getResumeAnalysis,
   changeCandidatePassword,
@@ -70,6 +71,7 @@ router.delete('/certifications/:id', deleteCertification);
 // 7. Resume & ATS Diagnostics
 router.post('/upload-resume', uploadResume, uploadResumeFile);
 router.post('/resume', updateResume);
+router.delete('/resume', deleteResume);
 router.get('/resume-analysis', getResumeAnalysis);
 
 // 8. Password & Security

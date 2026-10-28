@@ -76,26 +76,45 @@ export const computeCandidateStats = (user) => {
 export const generateAtsAnalysis = (user) => {
   const skillsCount = user.skills?.length || 0;
   const eduCount = user.education?.length || 0;
-  const expCount = user.experience?.length || 0;
-  const hasLinks = Boolean(user.links?.github || user.links?.linkedin);
+  const expList = user.experience || [];
+  const expCount = expList.filter((x) => x.type !== 'project').length;
+  const projectCount = expList.filter((x) => x.type === 'project').length;
+  const hasLinks = Boolean(user.links?.github || user.links?.linkedin || user.links?.portfolio);
   const hasContact = Boolean(user.phone && user.email);
+  const hasResume = Boolean(user.resumeFileName || user.resumeUrl);
 
-  // Section 1: Contact & Links (Max 100)
+  const actionVerbRegex = /\b(built|developed|created|implemented|designed|managed|led|optimized|engineered|architected|deployed|integrated)\b/i;
+  const hasActionVerbs = expList.some((x) => actionVerbRegex.test(x.description || x.title || ''));
+
   let contactScore = 60;
   if (hasContact) contactScore += 25;
   if (hasLinks) contactScore += 15;
 
-  // Section 2: Technical Skills (Max 100)
-  let skillsScore = Math.min(100, 50 + skillsCount * 8);
-
-  // Section 3: Experience & Projects (Max 100)
-  let expScore = expCount === 0 ? 50 : Math.min(100, 65 + expCount * 12);
-
-  // Section 4: Education & Credentials (Max 100)
+  let skillsScore = Math.min(100, Math.max(50, 45 + skillsCount * 8));
+  let expScore = expCount === 0 ? 55 : Math.min(100, 65 + expCount * 12);
   let eduScore = eduCount >= 1 ? 100 : 50;
 
+  let projectScore = 50;
+  if (projectCount > 0) projectScore += Math.min(35, projectCount * 15);
+  if (hasLinks) projectScore += 15;
+  projectScore = Math.min(100, projectScore);
+
+  let formattingScore = hasResume ? 95 : 65;
+
+  const quickMetrics = {
+    keywordMatchRate: Math.min(98, Math.max(50, 42 + skillsCount * 7)),
+    formattingHealth: hasResume ? 95 : 60,
+    actionVerbsImpact: hasActionVerbs ? 88 : (expCount > 0 ? 74 : 58),
+    portfolioVerification: (hasLinks || projectCount > 0) ? 90 : 62,
+  };
+
   const overallAts = Math.round(
-    contactScore * 0.15 + skillsScore * 0.35 + expScore * 0.3 + eduScore * 0.2
+    contactScore * 0.12 +
+    skillsScore * 0.28 +
+    expScore * 0.22 +
+    eduScore * 0.18 +
+    projectScore * 0.12 +
+    formattingScore * 0.08
   );
 
   const sections = [
@@ -106,7 +125,7 @@ export const generateAtsAnalysis = (user) => {
       notes:
         hasContact && hasLinks
           ? 'Full Name, Phone, Email, and Professional Links verified.'
-          : 'Ensure Phone, Email, and LinkedIn/GitHub links are provided.',
+          : 'Ensure Phone, Email, and LinkedIn/GitHub links are provided in profile.',
     },
     {
       title: 'Core Technical Skills',
@@ -115,13 +134,13 @@ export const generateAtsAnalysis = (user) => {
       notes: `${skillsCount} industry skills indexed for automated role filtering.`,
     },
     {
-      title: 'Work & Project Experience',
+      title: 'Work & Internship Experience',
       score: expScore,
       status: expScore >= 75 ? 'Passed' : 'Needs Polish',
       notes:
         expCount > 0
-          ? `${expCount} roles/projects documented with measurable deliverables.`
-          : 'Add work experience, internships, or capstone projects to improve ranking.',
+          ? `${expCount} corporate/internship roles documented with measurable deliverables.`
+          : 'Add work experience or industry internships to improve employer ranking.',
     },
     {
       title: 'Academic Education & Degree',
@@ -132,15 +151,51 @@ export const generateAtsAnalysis = (user) => {
           ? `${user.education[0]?.degree || 'Degree'} verified with academic performance metrics.`
           : 'Add at least one academic degree or certification.',
     },
+    {
+      title: 'Projects & Practical Portfolio',
+      score: projectScore,
+      status: projectScore >= 80 ? 'Passed' : 'Needs Polish',
+      notes:
+        projectCount > 0 || hasLinks
+          ? `${projectCount} capstone/software projects indexed with repository links.`
+          : 'Include active GitHub repository links or capstone project deliverables.',
+    },
+    {
+      title: 'Formatting & ATS Readability',
+      score: formattingScore,
+      status: formattingScore >= 90 ? 'Passed' : 'Action Required',
+      notes: hasResume
+        ? `Clean machine-readable document (${user.resumeFileName || 'Resume'}) verified by ATS parser.`
+        : 'Upload PDF or DOCX resume to achieve 95% single-column ATS formatting score.',
+    },
   ];
+
+  let recommendation = '';
+  if (overallAts >= 90) {
+    recommendation = 'Your resume and credentials are exceptionally optimized for top-tier employer shortlists! Keep projects and certifications updated.';
+  } else if (!hasResume) {
+    recommendation = 'Upload your latest PDF or DOCX resume to immediately boost formatting score and unlock 90+ ATS readiness.';
+  } else if (skillsCount < 5) {
+    recommendation = `Add ${5 - skillsCount} more technical skills to increase your keyword match rate above 90% for employer search algorithms.`;
+  } else if (expCount === 0 && projectCount === 0) {
+    recommendation = 'Add at least 1 internship or university project to demonstrate practical deliverables and reach 95+ ATS score.';
+  } else {
+    recommendation = 'Add quantifiable outcomes to your experience (e.g. "Optimized API response time by 30%") and ensure your GitHub profile is linked.';
+  }
+
+  const readinessBadge =
+    overallAts >= 85
+      ? 'High ATS Readiness'
+      : overallAts >= 70
+      ? 'Moderate ATS Readiness'
+      : 'Needs Optimization';
 
   return {
     overallScore: overallAts,
+    readinessBadge,
+    quickMetrics,
     sections,
-    recommendation:
-      overallAts >= 90
-        ? 'Your resume profile is fully optimized for top employer shortlisting!'
-        : 'Add quantifiable deliverables (e.g., "Built REST API handling 5,000+ daily requests") and add GitHub URLs for your projects to elevate your rank to 95+ ATS score.',
+    recommendation,
   };
 };
 
@@ -921,6 +976,35 @@ export const updateResume = asyncHandler(async (req, res) => {
         atsAnalysis,
       },
       'Candidate resume synchronized with ATS scoring engine'
+    )
+  );
+});
+
+
+export const deleteResume = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user) throw new ApiError(404, 'Candidate not found');
+
+  user.resumeUrl = '';
+  user.resumeFileName = '';
+  user.resumeFileSize = '';
+  user.resumeUploadedAt = null;
+
+  await user.save();
+
+  const { atsAnalysis } = await callPythonAiCandidateEvaluation(user);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        resumeFileName: '',
+        resumeFileSize: '',
+        resumeUrl: '',
+        resumeUploadedAt: null,
+        atsAnalysis,
+      },
+      'Resume removed successfully from candidate profile'
     )
   );
 });
