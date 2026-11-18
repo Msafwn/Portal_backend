@@ -198,6 +198,10 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
     otpCode: {
       type: String,
       default: null,
@@ -245,6 +249,7 @@ userSchema.methods.generateAccessToken = function () {
       email: this.email,
       name: this.name,
       role: this.role,
+      tokenVersion: this.tokenVersion ?? 0,
     },
     process.env.ACCESS_TOKEN_SECRET || 'access_secret_key',
     {
@@ -257,6 +262,7 @@ userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
       id: this._id,
+      tokenVersion: this.tokenVersion ?? 0,
     },
     process.env.REFRESH_TOKEN_SECRET || 'refresh_secret_key',
     {

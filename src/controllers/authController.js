@@ -225,6 +225,22 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, 'Invalid refresh token: User not found');
     }
 
+    if ((decodedToken?.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+      throw new ApiError(401, 'Refresh token has been revoked');
+    }
+
+    // Strict Refresh Token Rotation & Reuse Detection
+    if (!user.refreshToken || user.refreshToken !== incomingRefreshToken) {
+      await User.findByIdAndUpdate(user._id, {
+        $unset: { refreshToken: 1 },
+        $inc: { tokenVersion: 1 },
+      });
+      throw new ApiError(
+        401,
+        'Refresh token is invalid or reused. All sessions revoked.'
+      );
+    }
+
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshToken(user._id);
 
@@ -426,6 +442,9 @@ export const logout = asyncHandler(async (req, res) => {
     {
       $unset: {
         refreshToken: 1,
+      },
+      $inc: {
+        tokenVersion: 1,
       },
     },
     {

@@ -27,6 +27,10 @@ export const protect = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, 'Invalid access token: User not found');
     }
 
+    if ((decoded?.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+      throw new ApiError(401, 'Session has been revoked: Please log in again');
+    }
+
     req.user = user;
     next();
   } catch (error) {
@@ -69,7 +73,7 @@ export const optionalProtect = asyncHandler(async (req, res, next) => {
     const user = await User.findById(decoded?.id).select(
       '-password -refreshToken'
     );
-    if (user) {
+    if (user && (decoded?.tokenVersion ?? 0) === (user.tokenVersion ?? 0)) {
       req.user = user;
     }
   } catch (error) {
