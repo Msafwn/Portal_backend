@@ -17,7 +17,7 @@ import {
 const computeMatchScore = (candidateSkills = [], jobRequiredSkills = []) => {
   if (!jobRequiredSkills || jobRequiredSkills.length === 0) {
     return {
-      matchPercentage: 80,
+      matchPercentage: null,
       matchedSkills: candidateSkills.map((s) =>
         typeof s === 'string' ? s : s.name
       ),
@@ -54,10 +54,10 @@ const computeMatchScore = (candidateSkills = [], jobRequiredSkills = []) => {
   });
 
   const basePercentage =
-    totalWeight > 0 ? Math.round((matchedWeight / totalWeight) * 100) : 75;
+    totalWeight > 0 ? Math.round((matchedWeight / totalWeight) * 100) : 0;
 
-  // Scale realistically between 40% and 98%
-  const matchPercentage = Math.min(98, Math.max(40, basePercentage));
+  // Preserve realistic bounds: exact 0% if no skills matched, up to 100%
+  const matchPercentage = Math.min(100, Math.max(0, basePercentage));
 
   return {
     matchPercentage,
@@ -136,7 +136,13 @@ export const applyToJob = asyncHandler(async (req, res) => {
   let matchedSkills = clientMatchedSkills;
   let missingSkills = clientMissingSkills;
 
-  if (!matchPercentage || matchPercentage <= 0) {
+  const hasClientMatchScore =
+    matchPercentage !== undefined &&
+    matchPercentage !== null &&
+    matchPercentage !== '' &&
+    !isNaN(Number(matchPercentage));
+
+  if (!hasClientMatchScore) {
     const matchAnalysis = computeMatchScore(
       user?.skills || [],
       job.requiredSkills || []
@@ -144,13 +150,20 @@ export const applyToJob = asyncHandler(async (req, res) => {
     matchPercentage = matchAnalysis.matchPercentage;
     matchedSkills = matchAnalysis.matchedSkills;
     missingSkills = matchAnalysis.missingSkills;
+  } else {
+    matchPercentage = Number(matchPercentage);
   }
+
+  const finalMatchScore =
+    typeof matchPercentage === 'number' && !isNaN(matchPercentage)
+      ? Math.min(100, Math.max(0, Math.round(matchPercentage)))
+      : null;
 
   // 4. Create new Application
   const application = await Application.create({
     job: jobId,
     applicant: req.user.id,
-    matchPercentage: Math.min(100, Math.max(0, Number(matchPercentage) || 75)),
+    matchPercentage: finalMatchScore,
     matchedSkills: Array.isArray(matchedSkills) ? matchedSkills : [],
     missingSkills: Array.isArray(missingSkills) ? missingSkills : [],
     coverNote: coverNote.trim(),
@@ -273,8 +286,10 @@ export const getMyApplications = asyncHandler(async (req, res) => {
       workMode: job.workMode || 'On-site',
       jobType: job.jobType || 'Full-Time',
       jobStatus: job.status || 'Open',
-      matchScore: app.matchPercentage || 80,
-      matchPercentage: app.matchPercentage || 80,
+      matchScore:
+        typeof app.matchPercentage === 'number' ? app.matchPercentage : null,
+      matchPercentage:
+        typeof app.matchPercentage === 'number' ? app.matchPercentage : null,
       matchedSkills: app.matchedSkills || [],
       missingSkills: app.missingSkills || [],
       appliedDate: app.appliedAt
@@ -407,7 +422,8 @@ export const getJobApplicants = asyncHandler(async (req, res) => {
       experience: cand.experience || [],
       resumeUrl: app.resumeUrl || cand.resumeUrl || '',
       resumeFileName: cand.resumeFileName || 'Resume.pdf',
-      matchScore: app.matchPercentage || 75,
+      matchScore:
+        typeof app.matchPercentage === 'number' ? app.matchPercentage : null,
       matchedSkills: app.matchedSkills || [],
       missingSkills: app.missingSkills || [],
       status: app.status || 'Pending',
@@ -498,7 +514,8 @@ export const getEmployerAllApplications = asyncHandler(async (req, res) => {
   const formattedApplicants = filtered.map((app) => {
     const cand = app.applicant || {};
     const job = app.job || {};
-    const score = app.matchPercentage || 75;
+    const score =
+      typeof app.matchPercentage === 'number' ? app.matchPercentage : null;
     const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(cand.name || 'Candidate')}&background=0D8ABC&color=fff`;
 
     const eduStr =
@@ -528,11 +545,14 @@ export const getEmployerAllApplications = asyncHandler(async (req, res) => {
       roleTarget: job.roleTarget || job.jobType || 'Entry-Level',
       company: job.company || 'Company',
       matchScore: score,
-      scoreBreakdown: {
-        technical: Math.round(score * 0.5),
-        experience: Math.round(score * 0.3),
-        softSkills: Math.round(score * 0.2),
-      },
+      scoreBreakdown:
+        score !== null
+          ? {
+              technical: Math.round(score * 0.5),
+              experience: Math.round(score * 0.3),
+              softSkills: Math.round(score * 0.2),
+            }
+          : null,
       matchedSkills: app.matchedSkills || [],
       missingSkills: app.missingSkills || [],
       status: app.status || 'Under Review',

@@ -20,6 +20,7 @@ import {
   addCertification,
   deleteCertification,
   uploadResumeFile,
+  getSecureResumeFile,
   deleteResume,
   updateResume,
   getResumeAnalysis,
@@ -77,6 +78,7 @@ router.post('/upload-resume', uploadResume, uploadResumeFile);
 router.post('/resume', updateResume);
 router.delete('/resume', deleteResume);
 router.get('/resume-analysis', getResumeAnalysis);
+router.get('/resume/:filename', getSecureResumeFile);
 
 // 8. Password & Security
 router.put('/change-password', changeCandidatePassword);

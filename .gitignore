@@ -68,3 +68,13 @@ jspm_packages/
 
 # Windows thumbnail cache
 Thumbs.db
+
+# n8n & local databases
+n8n_data/
+*.sqlite
+*.sqlite3
+*.db
+public/uploads/resumes/*
+!public/uploads/resumes/.gitkeep
+public/uploads/avatars/*
+!public/uploads/avatars/.gitkeep

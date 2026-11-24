@@ -14,13 +14,13 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 export const calculate503020Match = (candidate, job) => {
   if (!candidate || !candidate.skills) {
     return {
-      matchPercentage: 75,
-      matchedSkills: (job.requiredSkills || []).slice(0, 2).map((s) => s.name),
-      missingSkills: (job.requiredSkills || []).slice(2).map((s) => s.name),
+      matchPercentage: null,
+      matchedSkills: [],
+      missingSkills: (job.requiredSkills || []).map((s) => s.name),
       breakdown: {
-        skillsScore: 35,
-        experienceScore: 23,
-        educationScore: 17,
+        skillsScore: 0,
+        experienceScore: 0,
+        educationScore: 0,
       },
     };
   }
@@ -54,8 +54,8 @@ export const calculate503020Match = (candidate, job) => {
   });
 
   const skillsRatio =
-    totalSkillWeight > 0 ? matchedSkillWeight / totalSkillWeight : 0.7;
-  const skillsScore = Math.round(Math.min(50, Math.max(15, skillsRatio * 50)));
+    totalSkillWeight > 0 ? matchedSkillWeight / totalSkillWeight : 0;
+  const skillsScore = Math.round(Math.min(50, Math.max(0, skillsRatio * 50)));
 
   // 2. Experience Alignment (30 Points)
   const candidateExpCount = candidate.experience?.length || 0;
@@ -65,23 +65,23 @@ export const calculate503020Match = (candidate, job) => {
     (job.jobType || '').toLowerCase().includes('entry') ||
     (job.jobType || '').toLowerCase().includes('trainee');
 
-  let experienceScore = 18;
+  let experienceScore = 0;
   if (isEntryLevelOrIntern) {
-    experienceScore = candidateExpCount > 0 ? 28 : 24;
+    experienceScore = candidateExpCount > 0 ? 30 : 20;
   } else {
     if (candidateExpCount >= jobExpRequired && jobExpRequired > 0) {
       experienceScore = 30;
     } else if (candidateExpCount > 0) {
-      experienceScore = 22;
+      experienceScore = Math.round((candidateExpCount / (jobExpRequired || 1)) * 30);
     } else {
-      experienceScore = 14;
+      experienceScore = 0;
     }
   }
 
   // 3. Education Requirement (20 Points)
   const candidateEdu = candidate.education || [];
   const hasDegree = candidateEdu.length > 0;
-  let educationScore = 12;
+  let educationScore = 0;
 
   if (hasDegree) {
     const candidateField = (candidateEdu[0]?.field || '').toLowerCase();
@@ -97,13 +97,13 @@ export const calculate503020Match = (candidate, job) => {
     ) {
       educationScore = 20;
     } else {
-      educationScore = 17;
+      educationScore = 12;
     }
   }
 
   const matchPercentage = Math.min(
-    98,
-    Math.max(40, skillsScore + experienceScore + educationScore)
+    100,
+    Math.max(0, skillsScore + experienceScore + educationScore)
   );
 
   return {

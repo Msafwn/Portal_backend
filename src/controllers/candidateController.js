@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import User from '../models/User.js';
 import Job from '../models/Job.js';
 import Application from '../models/Application.js';
@@ -971,18 +973,67 @@ export const uploadResumeFile = asyncHandler(async (req, res) => {
 
   const { atsAnalysis } = await callPythonAiCandidateEvaluation(user);
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        resumeUrl,
-        resumeFileName: fileName,
-        resumeFileSize: fileSize,
-        resumeUploadedAt: user.resumeUploadedAt,
-        atsAnalysis,
-      },
-      'Resume file uploaded and indexed by ATS scoring engine'
-    )
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          resumeUrl,
+          resumeFileName: fileName,
+          resumeFileSize: fileSize,
+          resumeUploadedAt: user.resumeUploadedAt,
+          atsAnalysis,
+        },
+        'Resume file uploaded and indexed by ATS scoring engine'
+      )
+    );
+  });
+
+/**
+ * Secure Resume File Streaming Endpoint with Ownership & Role Access Control
+ * GET /uploads/resumes/:filename or /api/candidate/resume/:filename
+ */
+export const getSecureResumeFile = asyncHandler(async (req, res) => {
+  const { filename } = req.params;
+  if (!filename) {
+    throw new ApiError(400, 'Filename parameter is required');
+  }
+
+  // Sanitize filename to prevent directory traversal
+  const safeFilename = path.basename(filename);
+  const filePath = path.join(process.cwd(), 'public', 'uploads', 'resumes', safeFilename);
+
+  if (!fs.existsSync(filePath)) {
+    throw new ApiError(404, 'The requested resume document could not be found');
+  }
+
+  // 1. Admin has global audit access
+  if (req.user.role === 'admin') {
+    return res.sendFile(filePath);
+  }
+
+  // 2. Candidate can access their own resume
+  if (req.user.resumeUrl && req.user.resumeUrl.includes(safeFilename)) {
+    return res.sendFile(filePath);
+  }
+
+  // 3. Employer can access if candidate applied to any of employer's jobs
+  if (req.user.role === 'employer') {
+    const employerJobs = await Job.find({ employer: req.user._id }).select('_id');
+    const jobIds = employerJobs.map((j) => j._id);
+
+    const hasApplication = await Application.findOne({
+      job: { $in: jobIds },
+      resumeUrl: { $regex: safeFilename },
+    });
+
+    if (hasApplication) {
+      return res.sendFile(filePath);
+    }
+  }
+
+  throw new ApiError(
+    403,
+    'Access Denied: You do not have permission to view or download this candidate resume'
   );
 });
 

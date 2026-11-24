@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { csrfProtection } from './middleware/csrfMiddleware.js';
+import { protect } from './middleware/authMiddleware.js';
+import { getSecureResumeFile } from './controllers/candidateController.js';
 import authRoutes from './routes/authRoutes.js';
 import candidateRoutes from './routes/candidateRoutes.js';
 import interviewRoutes from './routes/interviewRoutes.js';
@@ -24,9 +26,13 @@ app.use(
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static('public'));
 app.use(cookieParser());
 app.use(csrfProtection);
+
+// Secure Resume Access: Intercept and enforce authentication + authorization before general static serving
+app.get('/uploads/resumes/:filename', protect, getSecureResumeFile);
+
+app.use(express.static('public'));
 
 app.get('/', (req, res) => {
   res.status(200).json({
